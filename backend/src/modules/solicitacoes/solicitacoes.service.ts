@@ -99,7 +99,7 @@ export class SolicitacoesService {
                         where: { id_unidade: caf.id, lote: { id_medicamento: item.id_medicamento }, quantidade: { gt: 0 } },
                     });
 
-                    const estoqueTotal = estoques.reduce((acc, est) => acc + est.quantidade, 0);
+                    const estoqueTotal = estoques.reduce((acc: number, est: any) => acc + est.quantidade, 0);
 
                     if (item.quantidade_aprovada > estoqueTotal) {
                         const med = await tx.medicamento.findUnique({ where: { id: item.id_medicamento }, include: { grupo: true } });
