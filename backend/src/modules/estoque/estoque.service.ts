@@ -53,7 +53,7 @@ export class EstoqueService {
     async registrarEntradaLote(data: EntradaLoteDTO) {
         if (data.quantidade <= 0) throw new AppError('Quantidade precisa ser maior que zero.', 400);
 
-        return await prisma.$transaction(async (tx) => {
+        return await prisma.$transaction(async (tx: any) => {
             // 1. Create or ensure Lote exists
             const lote = await tx.lote.upsert({
                 where: {
@@ -116,7 +116,7 @@ export class EstoqueService {
             throw new AppError('A unidade de origem e destino não podem ser as mesmas', 400);
         }
 
-        return await prisma.$transaction(async (tx) => {
+        return await prisma.$transaction(async (tx: any) => {
             // 1. Create Remessa registry
             const remessa = await tx.remessa.create({
                 data: {
@@ -206,7 +206,7 @@ export class EstoqueService {
     }
 
     async descartarLoteVencido(id_estoque: string, id_usuario_descarte: string) {
-        return prisma.$transaction(async (tx) => {
+        return prisma.$transaction(async (tx: any) => {
             const estoque = await tx.estoque.findUnique({
                 where: { id: id_estoque },
                 include: { lote: true }
