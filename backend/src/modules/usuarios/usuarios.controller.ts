@@ -16,6 +16,13 @@ export class UsuariosController {
         res.json(data);
     }
 
+    async update(req: Request, res: Response) {
+        const { id } = req.params;
+        const { nome, email, id_unidade, papel } = req.body;
+        const data = await usuariosService.update(id as string, { nome, email, id_unidade, papel });
+        res.json(data);
+    }
+
     async create(req: Request, res: Response) {
         const { nome, email, senha, id_unidade, papel } = req.body;
         if (!nome || !email || !senha || !id_unidade || !papel) {

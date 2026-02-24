@@ -1,15 +1,26 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Plus, ShieldAlert, Lock, Unlock } from 'lucide-react';
+import { Users, Search, Plus, ShieldAlert, Lock, Unlock, Pencil, X } from 'lucide-react';
 import api from '@/services/api';
 
+interface Usuario {
+    id: string;
+    nome: string;
+    email: string;
+    papel: string;
+    ativo: boolean;
+    id_unidade: string;
+    unidade?: { id: string; nome: string; tipo: string };
+}
+
 export default function TIUsuariosPage() {
-    const [usuarios, setUsuarios] = useState<any[]>([]);
+    const [usuarios, setUsuarios] = useState<Usuario[]>([]);
     const [unidades, setUnidades] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [showResetModal, setShowResetModal] = useState<string | null>(null);
+    const [showEditModal, setShowEditModal] = useState<Usuario | null>(null);
     const [masterPassword, setMasterPassword] = useState("");
 
     // Create Form state
@@ -18,6 +29,12 @@ export default function TIUsuariosPage() {
     const [senha, setSenha] = useState("");
     const [idUnidade, setIdUnidade] = useState("");
     const [papel, setPapel] = useState("USUARIO");
+
+    // Edit Form state
+    const [editNome, setEditNome] = useState("");
+    const [editEmail, setEditEmail] = useState("");
+    const [editIdUnidade, setEditIdUnidade] = useState("");
+    const [editPapel, setEditPapel] = useState("");
 
     // Reset Form State
     const [novaSenha, setNovaSenha] = useState("");
@@ -48,25 +65,46 @@ export default function TIUsuariosPage() {
             setNome(""); setEmail(""); setSenha(""); setPapel("USUARIO");
             loadData();
         } catch (err: any) {
-            alert(err.response?.data?.error || "Erro ao criar usuário");
+            alert(err.response?.data?.message || err.response?.data?.error || "Erro ao criar usuário");
+        }
+    };
+
+    const handleOpenEdit = (usuario: Usuario) => {
+        setShowEditModal(usuario);
+        setEditNome(usuario.nome);
+        setEditEmail(usuario.email);
+        setEditIdUnidade(usuario.id_unidade);
+        setEditPapel(usuario.papel);
+    };
+
+    const handleEdit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!showEditModal) return;
+        try {
+            await api.patch(`/usuarios/${showEditModal.id}`, {
+                nome: editNome,
+                email: editEmail,
+                id_unidade: editIdUnidade,
+                papel: editPapel,
+            });
+            setShowEditModal(null);
+            loadData();
+        } catch (err: any) {
+            alert(err.response?.data?.message || err.response?.data?.error || "Erro ao editar usuário");
         }
     };
 
     const handleReset = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            // Validate master first
             await api.post('/auth/verify-password', { senha: masterPassword });
-
-            // Execute reset
             await api.patch(`/usuarios/${showResetModal}/reset-senha`, { nova_senha: novaSenha });
-
             setShowResetModal(null);
             setMasterPassword("");
             setNovaSenha("");
             alert("Senha do usuário redefinida com sucesso.");
         } catch (err: any) {
-            alert(err.response?.data?.error || "Acesso Negado ou Erro ao Redefinir Senha");
+            alert(err.response?.data?.message || err.response?.data?.error || "Acesso Negado ou Erro ao Redefinir Senha");
         }
     };
 
@@ -122,7 +160,7 @@ export default function TIUsuariosPage() {
                                 <th className="p-4 font-semibold">Conta (E-mail)</th>
                                 <th className="p-4 font-semibold">Base de Operação</th>
                                 <th className="p-4 font-semibold">Papel do Sistema</th>
-                                <th className="p-4 font-semibold text-right">Ações Analíticas</th>
+                                <th className="p-4 font-semibold text-right">Ações</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -145,6 +183,15 @@ export default function TIUsuariosPage() {
                                     </td>
                                     <td className="p-4 text-sm font-semibold text-indigo-700">{usuario.papel}</td>
                                     <td className="p-4 flex gap-2 justify-end">
+                                        {/* Edit button */}
+                                        <button
+                                            onClick={() => handleOpenEdit(usuario)}
+                                            className="p-2 rounded-lg transition-colors border border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                                            title="Editar Credencial"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                        {/* Toggle status */}
                                         <button
                                             onClick={() => handleToggleStatus(usuario.id, usuario.ativo)}
                                             className={`p-2 rounded-lg transition-colors border ${usuario.ativo ? 'text-red-600 border-red-200 hover:bg-red-50' : 'text-green-600 border-green-200 hover:bg-green-50'}`}
@@ -152,6 +199,7 @@ export default function TIUsuariosPage() {
                                         >
                                             {usuario.ativo ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
                                         </button>
+                                        {/* Reset password */}
                                         <button
                                             onClick={() => setShowResetModal(usuario.id)}
                                             className="p-2 rounded-lg transition-colors border border-amber-200 text-amber-600 hover:bg-amber-50"
@@ -178,8 +226,9 @@ export default function TIUsuariosPage() {
             {showModal && (
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-                        <div className="p-6 border-b border-slate-100">
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-center">
                             <h2 className="text-xl font-bold text-slate-900">Emissão de Credencial SESA</h2>
+                            <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
                         </div>
                         <form onSubmit={handleCreate} className="p-6 space-y-4">
                             <div>
@@ -197,7 +246,7 @@ export default function TIUsuariosPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Vincular Unidade (Base Físca)</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Vincular Unidade (Base Física)</label>
                                 <select required className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" value={idUnidade} onChange={e => setIdUnidade(e.target.value)}>
                                     {unidades.map(u => (
                                         <option key={u.id} value={u.id}>({u.tipo}) {u.nome}</option>
@@ -215,6 +264,52 @@ export default function TIUsuariosPage() {
                             <div className="pt-4 flex justify-end space-x-3">
                                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors">Abortar</button>
                                 <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">Emitir Credencial</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Modal */}
+            {showEditModal && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                        <div className="p-6 border-b border-indigo-100 bg-indigo-50 flex justify-between items-center">
+                            <div className="flex items-center space-x-3">
+                                <Pencil className="w-5 h-5 text-indigo-600" />
+                                <h2 className="text-xl font-bold text-indigo-900">Editar Credencial</h2>
+                            </div>
+                            <button onClick={() => setShowEditModal(null)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+                        </div>
+                        <form onSubmit={handleEdit} className="p-6 space-y-4">
+                            <p className="text-sm text-slate-500">Editando: <span className="font-semibold text-slate-700">{showEditModal.email}</span></p>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Nome Completo</label>
+                                <input required type="text" className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" value={editNome} onChange={e => setEditNome(e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">E-mail</label>
+                                <input required type="email" className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" value={editEmail} onChange={e => setEditEmail(e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Vincular Unidade (Base Física)</label>
+                                <select required className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" value={editIdUnidade} onChange={e => setEditIdUnidade(e.target.value)}>
+                                    {unidades.map(u => (
+                                        <option key={u.id} value={u.id}>({u.tipo}) {u.nome}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Papel Administrativo</label>
+                                <select required className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" value={editPapel} onChange={e => setEditPapel(e.target.value)}>
+                                    <option value="USUARIO">Enfermeiro / Funcionário Local</option>
+                                    <option value="ADMIN">Diretor / Admin</option>
+                                    <option value="COORDENADOR">Gestão Setorial</option>
+                                </select>
+                            </div>
+                            <div className="pt-4 flex justify-end space-x-3">
+                                <button type="button" onClick={() => setShowEditModal(null)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors">Cancelar</button>
+                                <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">Salvar Alterações</button>
                             </div>
                         </form>
                     </div>
@@ -244,7 +339,7 @@ export default function TIUsuariosPage() {
                                 />
                             </div>
                             <div className="mt-4 pt-4 border-t border-slate-100">
-                                <label className="block text-sm font-medium text-slate-700 mb-1 text-red-600">Confirme SUA Senha Master de TI *</label>
+                                <label className="block text-sm font-medium text-red-600 mb-1">Confirme SUA Senha Master de TI *</label>
                                 <input
                                     required
                                     type="password"

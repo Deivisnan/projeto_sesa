@@ -46,6 +46,28 @@ export class UsuariosService {
         });
     }
 
+    async update(id: string, data: { nome?: string; email?: string; id_unidade?: string; papel?: string }) {
+        const exists = await prisma.usuario.findUnique({ where: { id } });
+        if (!exists) throw new AppError('Usuário não encontrado', 404);
+
+        // Check email uniqueness if being changed
+        if (data.email && data.email !== exists.email) {
+            const emailInUse = await prisma.usuario.findUnique({ where: { email: data.email } });
+            if (emailInUse) throw new AppError('Este e-mail já está em uso por outro usuário', 400);
+        }
+
+        return prisma.usuario.update({
+            where: { id },
+            data: {
+                nome: data.nome,
+                email: data.email,
+                id_unidade: data.id_unidade,
+                papel: data.papel,
+            },
+            include: { unidade: true },
+        });
+    }
+
     async toggleStatus(id: string, ativo: boolean) {
         return prisma.usuario.update({
             where: { id },
