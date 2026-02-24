@@ -14,6 +14,18 @@ app.use(express.json());
 
 app.use('/api', routes);
 
+app.get('/', (req: Request, res: Response) => {
+    res.json({
+        name: 'SysFarma API',
+        version: '1.0.0',
+        status: 'online',
+        endpoints: {
+            health: '/health',
+            api: '/api'
+        }
+    });
+});
+
 app.get('/health', (req: Request, res: Response) => {
     res.json({ status: 'ok', message: 'SysFarma API is running' });
 });
