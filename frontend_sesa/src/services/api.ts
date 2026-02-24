@@ -2,7 +2,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://projeto-sesa-ilbqb5u4a-deivisnans-projects.vercel.app/api',
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://projeto-sesa.vercel.app/api',
 });
 
 api.interceptors.request.use((config) => {
