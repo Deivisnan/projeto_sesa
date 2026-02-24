@@ -1,6 +1,7 @@
 import prisma from '../../core/database/prismaClient';
 import { TipoUnidade } from '@prisma/client';
 import { AppError } from '../../core/exceptions/AppError';
+import fs from 'fs';
 
 interface CreateUnidadeDTO {
     nome: string;
@@ -60,7 +61,7 @@ export class UnidadesService {
                 }
             }
         });
-        return permitidos.map(p => p.medicamento);
+        return permitidos.map((p: any) => p.medicamento);
     }
 
     async setMedicamentosPermitidos(id_unidade: string, ids_medicamentos: string[]) {
@@ -80,7 +81,7 @@ export class UnidadesService {
         } catch (error: any) {
             console.error("ERRO GRAVE NO PRISMA AO SALVAR CATÁLOGO:", error);
             try {
-                require('fs').appendFileSync('debug-post.txt', `[ERRO PRISMA] ${error.message}\n`);
+                fs.appendFileSync('debug-post.txt', `[ERRO PRISMA] ${error.message}\n`);
             } catch (e) { }
             throw new AppError(`Falha SQL Interna: ${error.message || 'Erro no banco de dados'}`, 500);
         }
