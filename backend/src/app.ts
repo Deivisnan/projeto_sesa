@@ -1,0 +1,23 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { errorHandler } from './core/exceptions/errorHandler';
+import routes from './routes';
+
+dotenv.config();
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+app.use('/api', routes);
+
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', message: 'SysFarma API is running' });
+});
+
+// Middleware for handling all errors (must be the last middleware)
+app.use(errorHandler);
+
+export default app;

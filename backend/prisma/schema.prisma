@@ -1,0 +1,288 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TipoUnidade {
+  TI
+  CAF
+  UBS
+  UPA
+  HOSPITAL
+}
+
+enum StatusCompra {
+  PENDENTE
+  RECEBIDA_PARCIALMENTE
+  CONCLUIDA
+  CANCELADA
+}
+
+enum StatusSolicitacao {
+  AGUARDANDO_ANALISE
+  APROVADA    // Deprecated ou usado para aprovação simples
+  EM_SEPARACAO
+  DESPACHADA
+  ATENDIDA_PARCIAL
+  ATENDIDA_INTEGRAL
+  RECUSADA
+}
+
+enum TipoMovEstoque {
+  ENTRADA_COMPRA
+  ENTRADA_REMESSA
+  SAIDA_REMESSA
+  SAIDA_DISPENSACAO
+  PERDA_VENCIMENTO
+  AJUSTE_INVENTARIO
+}
+
+model Unidade {
+  id        String      @id @default(uuid()) @db.Uuid
+  nome      String      @db.VarChar(150)
+  cnes      String?     @unique @db.VarChar(7)
+  tipo      TipoUnidade
+  endereco  String?
+  ativo     Boolean     @default(true)
+  criado_em DateTime    @default(now())
+
+  usuarios      Usuario[]
+  estoque       Estoque[]
+  solicitacoes  Solicitacao[]           @relation("UnidadeSolicitante")
+  remessasOrigem  Remessa[]             @relation("UnidadeOrigem")
+  remessasDestino Remessa[]             @relation("UnidadeDestino")
+  movimentacoes MovimentacaoEstoque[]
+  medicamentosPermitidos UnidadeMedicamentoPermitido[]
+
+  @@map("unidades")
+}
+
+model Usuario {
+  id         String   @id @default(uuid()) @db.Uuid
+  id_unidade String   @db.Uuid
+  nome       String   @db.VarChar(150)
+  email      String   @unique @db.VarChar(150)
+  senha_hash String   @db.VarChar(255)
+  papel      String   @db.VarChar(50)
+  ativo      Boolean  @default(true)
+
+  unidade       Unidade               @relation(fields: [id_unidade], references: [id])
+  compras       Compra[]
+  solicitacoes  Solicitacao[]
+  remessas      Remessa[]
+  movimentacoes MovimentacaoEstoque[]
+  auditorias    Auditoria[]
+
+  @@map("usuarios")
+}
+
+model Fornecedor {
+  id           String   @id @default(uuid()) @db.Uuid
+  razao_social String   @db.VarChar(150)
+  cnpj         String   @unique @db.VarChar(14)
+  ativo        Boolean  @default(true)
+
+  lotes   Lote[]
+  compras Compra[]
+
+  @@map("fornecedores")
+}
+
+model MedicamentoGrupo {
+  id              String  @id @default(uuid()) @db.Uuid
+  nome            String  @unique @db.VarChar(255) // e.g., "Dipirona Sódica"
+  estoque_minimo  Int     @default(0)
+  
+  medicamentos    Medicamento[]
+
+  @@map("medicamentos_grupos")
+}
+
+model Medicamento {
+  id              String  @id @default(uuid()) @db.Uuid
+  id_grupo        String  @db.Uuid
+  codigo_br       String? @unique @db.VarChar(20)
+  apresentacao    String  @db.VarChar(150) // e.g., "500mg Comprimido"
+  estoque_minimo  Int     @default(0)
+
+  grupo            MedicamentoGrupo @relation(fields: [id_grupo], references: [id], onDelete: Restrict)
+  lotes            Lote[]
+  itensCompra      ItemCompra[]
+  itensSolicitacao ItemSolicitacao[]
+  unidadesPermitidas UnidadeMedicamentoPermitido[]
+
+  @@unique([id_grupo, apresentacao])
+  @@map("medicamentos")
+}
+
+model UnidadeMedicamentoPermitido {
+  id              String  @id @default(uuid()) @db.Uuid
+  id_unidade      String  @db.Uuid
+  id_medicamento  String  @db.Uuid
+  autorizado_em   DateTime @default(now())
+  
+  unidade         Unidade     @relation(fields: [id_unidade], references: [id], onDelete: Cascade)
+  medicamento     Medicamento @relation(fields: [id_medicamento], references: [id], onDelete: Cascade)
+
+  @@unique([id_unidade, id_medicamento])
+  @@map("unidades_medicamentos_permitidos")
+}
+
+model Lote {
+  id              String   @id @default(uuid()) @db.Uuid
+  id_medicamento  String   @db.Uuid
+  id_fornecedor   String   @db.Uuid
+  codigo_lote     String   @db.VarChar(50)
+  data_fabricacao DateTime @db.Date
+  data_validade   DateTime @db.Date
+
+  medicamento    Medicamento           @relation(fields: [id_medicamento], references: [id])
+  fornecedor     Fornecedor            @relation(fields: [id_fornecedor], references: [id])
+  estoque        Estoque[]
+  itensRemessa   ItemRemessa[]
+  movimentacoes  MovimentacaoEstoque[]
+
+  @@unique([codigo_lote, id_medicamento, id_fornecedor])
+  @@index([data_validade])
+  @@map("lotes")
+}
+
+model Estoque {
+  id            String   @id @default(uuid()) @db.Uuid
+  id_unidade    String   @db.Uuid
+  id_lote       String   @db.Uuid
+  quantidade    Int      @default(0)
+  atualizado_em DateTime @default(now())
+
+  unidade Unidade @relation(fields: [id_unidade], references: [id])
+  lote    Lote    @relation(fields: [id_lote], references: [id])
+
+  @@unique([id_unidade, id_lote])
+  @@map("estoque")
+}
+
+model Compra {
+  id                 String       @id @default(uuid()) @db.Uuid
+  id_fornecedor      String       @db.Uuid
+  id_usuario_criador String       @db.Uuid
+  numero_empenho     String?      @db.VarChar(50)
+  valor_total        Decimal      @db.Decimal(12, 2)
+  status             StatusCompra @default(PENDENTE)
+  data_pedido        DateTime     @default(now())
+
+  fornecedor Fornecedor   @relation(fields: [id_fornecedor], references: [id])
+  usuario    Usuario      @relation(fields: [id_usuario_criador], references: [id])
+  itens      ItemCompra[]
+
+  @@map("compras")
+}
+
+model ItemCompra {
+  id                  String  @id @default(uuid()) @db.Uuid
+  id_compra           String  @db.Uuid
+  id_medicamento      String  @db.Uuid
+  quantidade_solicitada Int
+  quantidade_recebida Int     @default(0)
+  valor_unitario      Decimal @db.Decimal(10, 2)
+
+  compra      Compra      @relation(fields: [id_compra], references: [id], onDelete: Cascade)
+  medicamento Medicamento @relation(fields: [id_medicamento], references: [id])
+
+  @@map("itens_compra")
+}
+
+model Solicitacao {
+  id                     String            @id @default(uuid()) @db.Uuid
+  id_unidade_solicitante String            @db.Uuid
+  id_usuario_solicitante String            @db.Uuid
+  status                 StatusSolicitacao @default(AGUARDANDO_ANALISE)
+  data_solicitacao       DateTime          @default(now())
+
+  unidade Unidade           @relation("UnidadeSolicitante", fields: [id_unidade_solicitante], references: [id])
+  usuario Usuario           @relation(fields: [id_usuario_solicitante], references: [id])
+  itens   ItemSolicitacao[]
+  remessas Remessa[]
+
+  @@map("solicitacoes")
+}
+
+model ItemSolicitacao {
+  id                    String  @id @default(uuid()) @db.Uuid
+  id_solicitacao        String  @db.Uuid
+  id_medicamento        String  @db.Uuid
+  quantidade_solicitada Int
+  quantidade_aprovada   Int?    @default(0)
+
+  solicitacao Solicitacao @relation(fields: [id_solicitacao], references: [id], onDelete: Cascade)
+  medicamento Medicamento @relation(fields: [id_medicamento], references: [id])
+
+  @@map("itens_solicitacao")
+}
+
+model Remessa {
+  id                 String    @id @default(uuid()) @db.Uuid
+  id_solicitacao     String?   @db.Uuid // Optional, CAF can send loose remessa
+  id_unidade_origem  String    @db.Uuid
+  id_unidade_destino String    @db.Uuid
+  id_usuario_envio   String    @db.Uuid
+  data_envio         DateTime  @default(now())
+  data_recebimento   DateTime?
+
+  solicitacao    Solicitacao?  @relation(fields: [id_solicitacao], references: [id])
+  unidadeOrigem  Unidade       @relation("UnidadeOrigem", fields: [id_unidade_origem], references: [id])
+  unidadeDestino Unidade       @relation("UnidadeDestino", fields: [id_unidade_destino], references: [id])
+  usuarioEnvio   Usuario       @relation(fields: [id_usuario_envio], references: [id])
+  itens          ItemRemessa[]
+
+  @@map("remessas")
+}
+
+model ItemRemessa {
+  id         String @id @default(uuid()) @db.Uuid
+  id_remessa String @db.Uuid
+  id_lote    String @db.Uuid
+  quantidade Int
+
+  remessa Remessa @relation(fields: [id_remessa], references: [id], onDelete: Cascade)
+  lote    Lote    @relation(fields: [id_lote], references: [id])
+
+  @@map("itens_remessa")
+}
+
+model MovimentacaoEstoque {
+  id                String         @id @default(uuid()) @db.Uuid
+  id_unidade        String         @db.Uuid
+  id_lote           String         @db.Uuid
+  id_usuario        String         @db.Uuid
+  tipo              TipoMovEstoque
+  quantidade        Int            // Positive (In) or Negative (Out)
+  referencia_id     String?        @db.Uuid // ID of Remessa, Compra, or Receita
+  observacao        String?        @db.Text
+  data_movimentacao DateTime       @default(now())
+
+  unidade Unidade @relation(fields: [id_unidade], references: [id])
+  lote    Lote    @relation(fields: [id_lote], references: [id])
+  usuario Usuario @relation(fields: [id_usuario], references: [id])
+
+  @@index([id_unidade, data_movimentacao])
+  @@map("movimentacoes_estoque")
+}
+
+model Auditoria {
+  id          String   @id @default(uuid()) @db.Uuid
+  entidade    String   @db.VarChar(50) // "MedicamentoGrupo" or "Medicamento"
+  id_entidade String   @db.Uuid
+  acao        String   @db.VarChar(20) // "CRIACAO", "EDICAO", "EXCLUSAO"
+  detalhes    String?  @db.Text
+  data_hora   DateTime @default(now())
+  id_usuario  String   @db.Uuid
+
+  usuario     Usuario  @relation(fields: [id_usuario], references: [id])
+
+  @@index([entidade, id_entidade])
+  @@map("auditorias")
+}

@@ -1,0 +1,31 @@
+[REQ] Unidade: e8a690ba-2c89-4d5b-971c-1e2bbf1b2a98 | Body: ["6dc7e6e0-d614-403b-bbc5-bfbbe9ad5250","c61b5386-c138-4605-bf0e-4e9724322da8"]
+[ERRO PRISMA] 
+Invalid `prisma.unidadeMedicamentoPermitido.createMany()` invocation in
+C:\Users\bispo\Documents\Projetos\Projeto_SESA\backend\src\modules\unidades\unidades.service.ts:77:58
+
+  74     id_unidade,
+  75     id_medicamento: id_med
+  76 }));
+→ 77 await prisma.unidadeMedicamentoPermitido.createMany(
+Foreign key constraint violated: `(not available)`
+[REQ] Unidade: e8a690ba-2c89-4d5b-971c-1e2bbf1b2a98 | Body: ["6dc7e6e0-d614-403b-bbc5-bfbbe9ad5250","c61b5386-c138-4605-bf0e-4e9724322da8"]
+[ERRO PRISMA] 
+Invalid `prisma.unidadeMedicamentoPermitido.createMany()` invocation in
+C:\Users\bispo\Documents\Projetos\Projeto_SESA\backend\src\modules\unidades\unidades.service.ts:77:58
+
+  74     id_unidade,
+  75     id_medicamento: id_med
+  76 }));
+→ 77 await prisma.unidadeMedicamentoPermitido.createMany(
+Foreign key constraint violated: `(not available)`
+[REQ] Unidade: e8a690ba-2c89-4d5b-971c-1e2bbf1b2a98 | Body: ["6dc7e6e0-d614-403b-bbc5-bfbbe9ad5250","c61b5386-c138-4605-bf0e-4e9724322da8"]
+[ERRO PRISMA] 
+Invalid `prisma.unidadeMedicamentoPermitido.createMany()` invocation in
+C:\Users\bispo\Documents\Projetos\Projeto_SESA\backend\src\modules\unidades\unidades.service.ts:77:58
+
+  74     id_unidade,
+  75     id_medicamento: id_med
+  76 }));
+→ 77 await prisma.unidadeMedicamentoPermitido.createMany(
+Foreign key constraint violated: `(not available)`
+[REQ] Unidade: e8a690ba-2c89-4d5b-971c-1e2bbf1b2a98 | Body: ["fab83415-9217-4646-8301-615802715dc5","6767e1b4-7b7c-4d07-8612-e3d2ca7e2cc1","91d7700c-bb52-459c-ab27-aed7fb43a927"]

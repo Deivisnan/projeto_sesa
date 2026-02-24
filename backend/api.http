@@ -1,0 +1,28 @@
+### Health Check
+GET http://localhost:3333/health
+
+### Criar uma Unidade CAF
+POST http://localhost:3333/api/unidades
+Content-Type: application/json
+
+{
+  "nome": "CAF Central Administrativo",
+  "tipo": "CAF",
+  "endereco": "Rua Central, 123"
+}
+
+### Criar uma Unidade UBS
+POST http://localhost:3333/api/unidades
+Content-Type: application/json
+
+{
+  "nome": "UBS Vila Nova",
+  "tipo": "UBS",
+  "endereco": "Rua dos Bairros, 456"
+}
+
+### Listar todas as unidades
+GET http://localhost:3333/api/unidades
+
+### Consultar estoque de uma unidade expecífica (Substitua o UUID pelo gerado anterior)
+GET http://localhost:3333/api/estoque/ADICIONE_O_UUID_DA_UNIDADE_AQUI
