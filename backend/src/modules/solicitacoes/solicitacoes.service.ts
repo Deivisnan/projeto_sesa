@@ -20,7 +20,7 @@ export class SolicitacoesService {
         }
 
         // Transação para criar a solicitação e os itens associados
-        const solicitacao = await prisma.$transaction(async (tx) => {
+        const solicitacao = await prisma.$transaction(async (tx: any) => {
             const nova = await tx.solicitacao.create({
                 data: {
                     id_unidade_solicitante: data.id_unidade_solicitante,
