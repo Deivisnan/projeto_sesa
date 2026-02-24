@@ -80,7 +80,7 @@ export class SolicitacoesService {
     }
 
     async aprovar(data: AprovarSolicitacaoDTO) {
-        return prisma.$transaction(async (tx) => {
+        return prisma.$transaction(async (tx: any) => {
             const caf = await tx.unidade.findFirst({
                 where: { tipo: 'CAF' }
             });
@@ -119,7 +119,7 @@ export class SolicitacoesService {
     }
 
     async despachar(id_solicitacao: string, id_usuario_despacho: string) {
-        return prisma.$transaction(async (tx) => {
+        return prisma.$transaction(async (tx: any) => {
             const sol = await tx.solicitacao.findUnique({
                 where: { id: id_solicitacao },
                 include: { itens: true }
@@ -168,7 +168,7 @@ export class SolicitacoesService {
                     }
 
                     if (restante > 0) {
-                        const estoqueTotal = estoques.reduce((acc, est) => acc + est.quantidade, 0);
+                        const estoqueTotal = estoques.reduce((acc: number, est: any) => acc + est.quantidade, 0);
                         const med = await tx.medicamento.findUnique({ where: { id: item.id_medicamento }, include: { grupo: true } });
                         throw new AppError(`ESTOQUE_INSUFICIENTE|${med?.grupo?.nome} - ${med?.apresentacao}|${estoqueTotal}|${item.quantidade_aprovada}|${item.id}|${item.id_medicamento}`, 400);
                     }
@@ -185,7 +185,7 @@ export class SolicitacoesService {
     }
 
     async receber(id_solicitacao: string, id_unidade_recebedora: string, id_usuario_recebedor: string) {
-        return prisma.$transaction(async (tx) => {
+        return prisma.$transaction(async (tx: any) => {
             const sol = await tx.solicitacao.findUnique({
                 where: { id: id_solicitacao }
             });
@@ -231,7 +231,7 @@ export class SolicitacoesService {
     }
 
     async recusar(id_solicitacao: string, id_usuario_recusador: string, motivo: string) {
-        return prisma.$transaction(async (tx) => {
+        return prisma.$transaction(async (tx: any) => {
             const sol = await tx.solicitacao.findUnique({
                 where: { id: id_solicitacao }
             });
@@ -281,7 +281,7 @@ export class SolicitacoesService {
 
         // Unificar, Normalizar e Ordenar por Data Decrescente
         const unificado = [
-            ...remessas.map(r => ({
+            ...remessas.map((r: any) => ({
                 id: r.id,
                 tipo_logistica: 'REMESSA_AVULSA',
                 data_evento: r.data_envio,
@@ -289,7 +289,7 @@ export class SolicitacoesService {
                 responsavel: r.usuarioEnvio.nome,
                 quantidade_itens: r.itens.length
             })),
-            ...solicitacoes.map(s => ({
+            ...solicitacoes.map((s: any) => ({
                 id: s.id,
                 tipo_logistica: 'SOLICITACAO_ATENDIDA',
                 data_evento: s.data_solicitacao,
