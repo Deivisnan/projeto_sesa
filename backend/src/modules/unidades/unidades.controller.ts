@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { UnidadesService } from './unidades.service';
 import { AppError } from '../../core/exceptions/AppError';
+import fs from 'fs';
 
 const unidadesService = new UnidadesService();
 
@@ -55,7 +56,7 @@ export class UnidadesController {
         const { id } = req.params;
         const { ids_medicamentos } = req.body; // Array de IDs
         try {
-            require('fs').appendFileSync('debug-post.txt', `[REQ] Unidade: ${id} | Body: ${JSON.stringify(ids_medicamentos)}\n`);
+            fs.appendFileSync('debug-post.txt', `[REQ] Unidade: ${id} | Body: ${JSON.stringify(ids_medicamentos)}\n`);
         } catch (e) { }
 
         await unidadesService.setMedicamentosPermitidos(id as string, ids_medicamentos || []);
