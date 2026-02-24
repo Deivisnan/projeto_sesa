@@ -102,11 +102,11 @@ export class MedicamentosService {
         });
 
         // Compute total current stock across all lots and units for each presentation and group
-        return grupos.map(grupo => {
+        return grupos.map((grupo: any) => {
             let totalGrupo = 0;
-            const medicamentosMapeados = grupo.medicamentos.map(med => {
-                const totalApresentacao = med.lotes.reduce((sum, lote) => {
-                    return sum + lote.estoque.reduce((sq, est) => sq + est.quantidade, 0);
+            const medicamentosMapeados = grupo.medicamentos.map((med: any) => {
+                const totalApresentacao = med.lotes.reduce((sum: number, lote: any) => {
+                    return sum + lote.estoque.reduce((sq: number, est: any) => sq + est.quantidade, 0);
                 }, 0);
 
                 totalGrupo += totalApresentacao;
