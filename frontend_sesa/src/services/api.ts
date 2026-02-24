@@ -1,8 +1,9 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { API_URL } from './apiConfig';
 
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://projeto-sesa.vercel.app/api',
+    baseURL: API_URL,
 });
 
 api.interceptors.request.use((config) => {

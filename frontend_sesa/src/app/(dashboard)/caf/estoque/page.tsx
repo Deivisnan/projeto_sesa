@@ -1,14 +1,15 @@
 import { ArrowRight } from "lucide-react";
 import { cookies } from "next/headers";
-import EstoqueTable from "./EstoqueTable";
 import Link from "next/link";
+import { API_URL } from "@/services/apiConfig";
+import EstoqueTable from "./EstoqueTable";
 
 async function getEstoqueCentral(id_unidade: string) {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('sysfarma.token')?.value;
 
-        const res = await fetch(`http://127.0.0.1:3333/api/estoque/${id_unidade}`, {
+        const res = await fetch(`${API_URL}/estoque/${id_unidade}`, {
             headers: { 'Authorization': `Bearer ${token}` },
             cache: 'no-store'
         });

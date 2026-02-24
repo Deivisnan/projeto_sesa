@@ -1,12 +1,13 @@
 import { Activity, Package } from "lucide-react";
 import { cookies } from "next/headers";
+import { API_URL } from "@/services/apiConfig";
 
 async function getUnidades() {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('sysfarma.token')?.value;
 
-        const res = await fetch('http://127.0.0.1:3333/api/unidades', {
+        const res = await fetch(`${API_URL}/unidades`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             },

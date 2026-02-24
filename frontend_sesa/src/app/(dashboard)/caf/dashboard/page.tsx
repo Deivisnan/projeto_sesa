@@ -1,12 +1,13 @@
 import { Activity, Package, AlertTriangle, Users, HeartPulse, Layers, HelpCircle } from "lucide-react";
 import { cookies } from "next/headers";
+import { API_URL } from "@/services/apiConfig";
 
 async function getEstoqueCentral(id_unidade: string) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('sysfarma.token')?.value;
 
-    const res = await fetch(`http://127.0.0.1:3333/api/estoque/${id_unidade}`, {
+    const res = await fetch(`${API_URL}/estoque/${id_unidade}`, {
       headers: { 'Authorization': `Bearer ${token}` },
       cache: 'no-store'
     });
@@ -24,7 +25,7 @@ async function getUnidades() {
     const cookieStore = await cookies();
     const token = cookieStore.get('sysfarma.token')?.value;
 
-    const res = await fetch(`http://127.0.0.1:3333/api/unidades`, {
+    const res = await fetch(`${API_URL}/unidades`, {
       headers: { 'Authorization': `Bearer ${token}` },
       cache: 'default',
       next: { revalidate: 60 }
@@ -43,7 +44,7 @@ async function getRemessasRecentes() {
     const cookieStore = await cookies();
     const token = cookieStore.get('sysfarma.token')?.value;
 
-    const res = await fetch(`http://127.0.0.1:3333/api/solicitacoes/remessas-recentes`, {
+    const res = await fetch(`${API_URL}/solicitacoes/remessas-recentes`, {
       headers: { 'Authorization': `Bearer ${token}` },
       cache: 'default',
       next: { revalidate: 30 }
@@ -177,8 +178,8 @@ export default async function DashboardPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${log.tipo_logistica === 'REMESSA_AVULSA'
-                            ? 'bg-amber-100 text-amber-700 border border-amber-200'
-                            : 'bg-teal-100 text-teal-700 border border-teal-200'
+                          ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                          : 'bg-teal-100 text-teal-700 border border-teal-200'
                           }`}>
                           {log.tipo_logistica === 'REMESSA_AVULSA' ? 'Remessa Manual' : 'Pedido Atendido'}
                         </span>

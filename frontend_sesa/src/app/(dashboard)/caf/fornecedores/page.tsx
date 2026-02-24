@@ -1,13 +1,14 @@
 import { Truck, Plus, Search, Building2 } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { API_URL } from "@/services/apiConfig";
 
 async function getFornecedores() {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('sysfarma.token')?.value;
 
-        const res = await fetch('http://127.0.0.1:3333/api/fornecedores', {
+        const res = await fetch(`${API_URL}/fornecedores`, {
             headers: { 'Authorization': `Bearer ${token}` },
             cache: 'no-store'
         });
