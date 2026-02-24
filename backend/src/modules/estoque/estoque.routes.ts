@@ -11,5 +11,6 @@ router.get('/descarte/historico/:id_unidade', controller.consultarHistoricoDesca
 router.post('/descarte/:id_estoque', ensureIsCAF as RequestHandler, controller.encerraLoteVencido as unknown as RequestHandler);
 router.post('/remessa', controller.efetuarRemessa as unknown as RequestHandler);
 router.post('/entrada', ensureIsCAF as RequestHandler, controller.registrarEntradaLote as unknown as RequestHandler);
+router.post('/dispensacao', controller.registrarDispensacao as unknown as RequestHandler);
 
 export { router as estoqueRoutes };

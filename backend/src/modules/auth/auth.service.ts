@@ -22,7 +22,7 @@ class AuthService {
         const passwordMatch = await bcrypt.compare(senha_plana, usuario.senha_hash);
 
         if (!passwordMatch) {
-            throw new AppError('E-mail ou senha incorretos.', 401);
+            throw new AppError('Senha incorreta.', 401);
         }
 
         // Gerar token com Payload Multi-Tenant

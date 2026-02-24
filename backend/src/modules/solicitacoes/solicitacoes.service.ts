@@ -132,6 +132,18 @@ export class SolicitacoesService {
             const caf = await tx.unidade.findFirst({ where: { tipo: 'CAF' } });
             if (!caf) throw new AppError('CAF não encontrada no sistema', 404);
 
+            // 1. Criar o registro da Remessa associada a esta solicitação
+            const remessa = await tx.remessa.create({
+                data: {
+                    id_solicitacao,
+                    id_unidade_origem: caf.id,
+                    id_unidade_destino: sol.id_unidade_solicitante,
+                    id_usuario_envio: id_usuario_despacho,
+                }
+            });
+
+            const itensRemessaData: any[] = [];
+
             for (const item of sol.itens) {
                 let restante = item.quantidade_aprovada || 0;
 
@@ -149,11 +161,13 @@ export class SolicitacoesService {
                         const qtdDeduzir = Math.min(est.quantidade, restante);
                         restante -= qtdDeduzir;
 
+                        // Baixa no estoque da CAF
                         await tx.estoque.update({
                             where: { id: est.id },
                             data: { quantidade: est.quantidade - qtdDeduzir }
                         });
 
+                        // Histórico de Saída da CAF
                         await tx.movimentacaoEstoque.create({
                             data: {
                                 id_unidade: caf.id,
@@ -161,9 +175,16 @@ export class SolicitacoesService {
                                 id_usuario: id_usuario_despacho,
                                 tipo: 'SAIDA_REMESSA',
                                 quantidade: -qtdDeduzir,
-                                referencia_id: id_solicitacao,
-                                observacao: `Expedição no Despacho da Remessa ${id_solicitacao.split('-')[0]}`
+                                referencia_id: remessa.id,
+                                observacao: `Expedição no Despacho da Solicitação ${id_solicitacao.split('-')[0]}`
                             }
+                        });
+
+                        // Coletar dados para ItemRemessa
+                        itensRemessaData.push({
+                            id_remessa: remessa.id,
+                            id_lote: est.id_lote,
+                            quantidade: qtdDeduzir
                         });
                     }
 
@@ -175,33 +196,90 @@ export class SolicitacoesService {
                 }
             }
 
+            // 2. Criar os itens da remessa detalhando os lotes enviados
+            if (itensRemessaData.length > 0) {
+                await tx.itemRemessa.createMany({
+                    data: itensRemessaData
+                });
+            }
+
             await tx.solicitacao.update({
                 where: { id: id_solicitacao },
                 data: { status: 'DESPACHADA' }
             });
 
-            return { message: 'Caixas despachadas. Estoque central deduzido definitivamente.' };
+            return { message: 'Caixas despachadas e remessa registrada. Estoque central deduzido definitivamente.', id_remessa: remessa.id };
         });
     }
 
     async receber(id_solicitacao: string, id_unidade_recebedora: string, id_usuario_recebedor: string) {
         return prisma.$transaction(async (tx: any) => {
             const sol = await tx.solicitacao.findUnique({
-                where: { id: id_solicitacao }
+                where: { id: id_solicitacao },
+                include: { remessas: { include: { itens: true } } }
             });
 
             if (!sol) throw new AppError('Solicitação não encontrada', 404);
             if (sol.id_unidade_solicitante !== id_unidade_recebedora) throw new AppError('Esta solicitação não pertence a esta unidade.', 403);
             if (sol.status !== 'DESPACHADA') throw new AppError('Apenas solicitações despachadas pela CAF podem ser recebidas.', 400);
 
-            // TODO (Futuro): Injetar o estoque recebido na tabela Estoque desta Unidade Local
+            // 1. Processar cada remessa pendente de recebimento
+            const remessasPendentes = sol.remessas.filter((r: any) => !r.data_recebimento);
+
+            if (remessasPendentes.length === 0) {
+                // Se não houver remessas pendentes no BD, mas o status é DESPACHADA, pode haver inconsistência 
+                // ou a remessa foi feita por outro fluxo. Vamos apenas concluir o status da solicitação.
+                console.warn(`Solicitação ${id_solicitacao} está DESPACHADA mas não possui registros de Remessa pendentes.`);
+            }
+
+            for (const remessa of remessasPendentes) {
+                for (const item of remessa.itens) {
+                    // Injetar no estoque local da unidade
+                    await tx.estoque.upsert({
+                        where: {
+                            id_unidade_id_lote: {
+                                id_unidade: id_unidade_recebedora,
+                                id_lote: item.id_lote,
+                            }
+                        },
+                        update: {
+                            quantidade: { increment: item.quantidade },
+                            atualizado_em: new Date()
+                        },
+                        create: {
+                            id_unidade: id_unidade_recebedora,
+                            id_lote: item.id_lote,
+                            quantidade: item.quantidade
+                        }
+                    });
+
+                    // Histórico de Entrada na Unidade
+                    await tx.movimentacaoEstoque.create({
+                        data: {
+                            id_unidade: id_unidade_recebedora,
+                            id_lote: item.id_lote,
+                            id_usuario: id_usuario_recebedor,
+                            tipo: 'ENTRADA_REMESSA',
+                            quantidade: item.quantidade,
+                            referencia_id: remessa.id,
+                            observacao: `Recebimento da Remessa para Solicitação ${id_solicitacao.split('-')[0]}`
+                        }
+                    });
+                }
+
+                // Marcar remessa como recebida
+                await tx.remessa.update({
+                    where: { id: remessa.id },
+                    data: { data_recebimento: new Date() }
+                });
+            }
 
             await tx.solicitacao.update({
                 where: { id: id_solicitacao },
                 data: { status: 'ATENDIDA_INTEGRAL' }
             });
 
-            return { message: 'Entrega confirmada com sucesso! Remessa concluída.' };
+            return { message: 'Entrega confirmada e estoque da unidade abastecido com sucesso!' };
         });
     }
 

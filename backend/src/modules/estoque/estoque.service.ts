@@ -252,4 +252,46 @@ export class EstoqueService {
             }
         });
     }
+
+    async registrarDispensacao(id_unidade: string, id_usuario: string, id_lote: string, quantidade: number, observacao?: string) {
+        if (quantidade <= 0) throw new AppError('A quantidade de dispensação deve ser maior que zero.', 400);
+
+        return await prisma.$transaction(async (tx: any) => {
+            // 1. Verificar estoque disponível
+            const estoque = await tx.estoque.findUnique({
+                where: {
+                    id_unidade_id_lote: { id_unidade, id_lote }
+                },
+                include: { lote: { include: { medicamento: { include: { grupo: true } } } } }
+            });
+
+            if (!estoque || estoque.quantidade < quantidade) {
+                const nomeMed = estoque?.lote?.medicamento?.grupo?.nome || 'Medicamento';
+                throw new AppError(`Estoque insuficiente para dispensação. Disponível: ${estoque?.quantidade || 0}, Solicitado: ${quantidade} (${nomeMed}).`, 400);
+            }
+
+            // 2. Dar baixa no estoque
+            const estoqueAtualizado = await tx.estoque.update({
+                where: { id: estoque.id },
+                data: {
+                    quantidade: { decrement: quantidade },
+                    atualizado_em: new Date()
+                }
+            });
+
+            // 3. Registrar movimentação
+            await tx.movimentacaoEstoque.create({
+                data: {
+                    id_unidade,
+                    id_lote,
+                    id_usuario,
+                    tipo: TipoMovEstoque.SAIDA_DISPENSACAO,
+                    quantidade: -quantidade,
+                    observacao: observacao || 'Dispensação para paciente.'
+                }
+            });
+
+            return estoqueAtualizado;
+        });
+    }
 }

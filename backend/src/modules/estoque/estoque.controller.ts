@@ -104,4 +104,24 @@ export class EstoqueController {
 
         res.status(201).json({ status: 'sucesso', remessa: data });
     }
+
+    async registrarDispensacao(req: Request, res: Response) {
+        const { id_lote, quantidade, observacao } = req.body;
+        const id_unidade = req.user!.id_unidade;
+        const id_usuario = req.user!.id;
+
+        if (!id_lote || !quantidade) {
+            throw new AppError('Lote e Quantidade são obrigatórios.', 400);
+        }
+
+        const data = await estoqueService.registrarDispensacao(
+            id_unidade,
+            id_usuario,
+            id_lote,
+            Number(quantidade),
+            observacao
+        );
+
+        res.status(201).json({ status: 'sucesso', estoque: data });
+    }
 }

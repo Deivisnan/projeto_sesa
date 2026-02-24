@@ -1,7 +1,7 @@
 "use client"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Activity, ShieldCheck, LogIn, AlertCircle } from 'lucide-react';
+import { Activity, ShieldCheck, LogIn, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import Cookies from 'js-cookie';
 import api from '@/services/api';
 
@@ -9,6 +9,7 @@ export default function LoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -38,7 +39,7 @@ export default function LoginPage() {
             }
 
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Falha ao autenticar.');
+            setError(err.response?.data?.message || err.response?.data?.error || 'Falha ao autenticar.');
         } finally {
             setLoading(false);
         }
@@ -64,7 +65,7 @@ export default function LoginPage() {
                 <div className="bg-white py-8 px-4 shadow-xl shadow-slate-200/50 sm:rounded-2xl sm:px-10 border border-slate-100">
                     <form className="space-y-6" onSubmit={handleLogin}>
                         {error && (
-                            <div className="bg-red-50 text-red-700 p-4 rounded-xl text-sm font-medium flex items-center space-x-3">
+                            <div className="bg-red-50 text-red-700 p-4 rounded-xl text-sm font-medium flex items-center space-x-3 transition-all animate-in fade-in slide-in-from-top-2">
                                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                                 <span>{error}</span>
                             </div>
@@ -74,7 +75,7 @@ export default function LoginPage() {
                             <label htmlFor="email" className="block text-sm font-semibold text-slate-700">
                                 E-mail Institucional
                             </label>
-                            <div className="mt-2">
+                            <div className="mt-2 text-slate-900">
                                 <input
                                     id="email"
                                     name="email"
@@ -83,7 +84,7 @@ export default function LoginPage() {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all sm:text-sm text-slate-900 bg-slate-50 focus:bg-white"
+                                    className="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all sm:text-sm bg-slate-50 focus:bg-white"
                                     placeholder="exemplo@saude.gov.br"
                                 />
                             </div>
@@ -93,18 +94,25 @@ export default function LoginPage() {
                             <label htmlFor="senha" className="block text-sm font-semibold text-slate-700">
                                 Senha de Acesso
                             </label>
-                            <div className="mt-2">
+                            <div className="mt-2 relative text-slate-900">
                                 <input
                                     id="senha"
                                     name="senha"
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     autoComplete="current-password"
                                     required
                                     value={senha}
                                     onChange={(e) => setSenha(e.target.value)}
-                                    className="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all sm:text-sm text-slate-900 bg-slate-50 focus:bg-white"
+                                    className="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all sm:text-sm bg-slate-50 focus:bg-white pr-12"
                                     placeholder="••••••••"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
                             </div>
                         </div>
 
