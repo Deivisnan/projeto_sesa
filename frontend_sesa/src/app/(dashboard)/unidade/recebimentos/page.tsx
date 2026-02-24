@@ -104,16 +104,34 @@ export default function UnidadeRecebimentosPage() {
                             <div className="p-5 flex-1 bg-white">
                                 <h4 className="text-xs font-bold text-slate-400 mb-3 uppercase">Conteúdo do Caminhão</h4>
                                 <div className="space-y-2">
-                                    {sol.itens?.filter((i: any) => i.quantidade_aprovada > 0).map((item: any) => (
-                                        <div key={item.id} className="flex justify-between items-center text-sm pb-2 border-b border-slate-50 last:border-0">
-                                            <span className="text-slate-700 font-medium truncate max-w-[180px]" title={item.medicamento?.grupo?.nome}>
-                                                {item.medicamento?.grupo?.nome}
-                                            </span>
-                                            <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
-                                                {item.quantidade_aprovada} un
-                                            </span>
-                                        </div>
-                                    ))}
+                                    {sol.remessas && sol.remessas.length > 0 ? (
+                                        // Mostrar itens reais da remessa (lotes)
+                                        sol.remessas[0].itens.map((item: any) => (
+                                            <div key={item.id} className="flex justify-between items-center text-sm pb-2 border-b border-slate-50 last:border-0">
+                                                <div className="flex flex-col">
+                                                    <span className="text-slate-700 font-medium truncate max-w-[180px]" title={item.lote?.medicamento?.grupo?.nome}>
+                                                        {item.lote?.medicamento?.grupo?.nome}
+                                                    </span>
+                                                    <span className="text-[10px] text-slate-400 font-mono">Lote: {item.lote?.codigo_lote}</span>
+                                                </div>
+                                                <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+                                                    {item.quantidade} un
+                                                </span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        // Fallback para itens aprovados (solicitações legadas ou sem remessa detalhada)
+                                        sol.itens?.filter((i: any) => i.quantidade_aprovada > 0).map((item: any) => (
+                                            <div key={item.id} className="flex justify-between items-center text-sm pb-2 border-b border-slate-50 last:border-0">
+                                                <span className="text-slate-700 font-medium truncate max-w-[180px]" title={item.medicamento?.grupo?.nome}>
+                                                    {item.medicamento?.grupo?.nome}
+                                                </span>
+                                                <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+                                                    {item.quantidade_aprovada} un
+                                                </span>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                             {sol.status === 'DESPACHADA' && (

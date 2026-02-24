@@ -27,7 +27,7 @@ export interface EntradaLoteDTO {
 export class EstoqueService {
     async consultarEstoque(id_unidade: string, apenasVencidos = false) {
         const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
+        hoje.setUTCHours(0, 0, 0, 0); // Usar UTC para consistência com o DB
 
         return prisma.estoque.findMany({
             where: {

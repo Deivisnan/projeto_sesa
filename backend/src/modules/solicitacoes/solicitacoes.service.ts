@@ -56,6 +56,21 @@ export class SolicitacoesService {
                         }
                     }
                 },
+                remessas: {
+                    include: {
+                        itens: {
+                            include: {
+                                lote: {
+                                    include: {
+                                        medicamento: {
+                                            include: { grupo: true }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 usuario: { select: { nome: true } }
             },
             orderBy: { data_solicitacao: 'desc' }
@@ -148,8 +163,18 @@ export class SolicitacoesService {
                 let restante = item.quantidade_aprovada || 0;
 
                 if (restante > 0) {
+                    const hoje = new Date();
+                    hoje.setHours(0, 0, 0, 0);
+
                     const estoques = await tx.estoque.findMany({
-                        where: { id_unidade: caf.id, lote: { id_medicamento: item.id_medicamento }, quantidade: { gt: 0 } },
+                        where: {
+                            id_unidade: caf.id,
+                            lote: {
+                                id_medicamento: item.id_medicamento,
+                                data_validade: { gte: hoje } // Garantir que não despacha vencido
+                            },
+                            quantidade: { gt: 0 }
+                        },
                         include: { lote: true },
                         orderBy: { lote: { data_validade: 'asc' } }
                     });
@@ -197,11 +222,13 @@ export class SolicitacoesService {
             }
 
             // 2. Criar os itens da remessa detalhando os lotes enviados
-            if (itensRemessaData.length > 0) {
-                await tx.itemRemessa.createMany({
-                    data: itensRemessaData
-                });
+            if (itensRemessaData.length === 0) {
+                throw new AppError('Não foi possível gerar itens para esta remessa (Estoque insuficiente ou vencido).', 400);
             }
+
+            await tx.itemRemessa.createMany({
+                data: itensRemessaData
+            });
 
             await tx.solicitacao.update({
                 where: { id: id_solicitacao },
