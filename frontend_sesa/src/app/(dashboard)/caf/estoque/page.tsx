@@ -2,6 +2,8 @@ import { ArrowRight } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { API_URL } from "@/services/apiConfig";
+
+export const dynamic = "force-dynamic";
 import EstoqueTable from "./EstoqueTable";
 
 async function getEstoqueCentral(id_unidade: string) {

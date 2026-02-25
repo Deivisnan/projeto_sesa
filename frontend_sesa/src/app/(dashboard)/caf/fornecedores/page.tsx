@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { API_URL } from "@/services/apiConfig";
 
+export const dynamic = "force-dynamic";
+
 async function getFornecedores() {
     try {
         const cookieStore = await cookies();

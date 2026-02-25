@@ -2,6 +2,8 @@ import { Activity, Package } from "lucide-react";
 import { cookies } from "next/headers";
 import { API_URL } from "@/services/apiConfig";
 
+export const dynamic = "force-dynamic";
+
 async function getUnidades() {
     try {
         const cookieStore = await cookies();

@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 
+export const dynamic = "force-dynamic";
+
 export default async function IndexPage() {
     const cookieStore = await cookies();
     const userCookie = cookieStore.get('sysfarma.user');

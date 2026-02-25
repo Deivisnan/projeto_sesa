@@ -2,6 +2,8 @@ import { Activity, Package, AlertTriangle, Users, HeartPulse, Layers, HelpCircle
 import { cookies } from "next/headers";
 import { API_URL } from "@/services/apiConfig";
 
+export const dynamic = "force-dynamic";
+
 async function getEstoqueCentral(id_unidade: string) {
   try {
     const cookieStore = await cookies();
