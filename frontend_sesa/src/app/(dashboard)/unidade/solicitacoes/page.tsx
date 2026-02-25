@@ -43,6 +43,22 @@ export default function SolicitacaoMedicamentosPage() {
         });
     };
 
+    const handleManualChange = (id_medicamento: string, value: string) => {
+        const num = value === "" ? 0 : parseInt(value);
+        if (isNaN(num)) return;
+
+        setCarrinho(prev => {
+            const finalCount = Math.max(0, num);
+            const draft = { ...prev };
+            if (finalCount === 0) {
+                delete draft[id_medicamento];
+            } else {
+                draft[id_medicamento] = finalCount;
+            }
+            return draft;
+        });
+    };
+
     const handleSolicitacao = async () => {
         if (Object.keys(carrinho).length === 0) return alert('Adicione pelo menos 1 item ao pedido!');
         setEnviando(true);
@@ -101,10 +117,17 @@ export default function SolicitacaoMedicamentosPage() {
                                                 <p className="text-sm font-medium text-slate-500 line-clamp-2">{med.apresentacao}</p>
                                             </div>
                                             <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-                                                <div className="flex items-center space-x-3 bg-slate-50 rounded-lg border border-slate-300">
-                                                    <button onClick={() => addToCart(med.id, -1)} className="px-3 py-1 font-bold text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-l-lg transition-colors">-</button>
-                                                    <span className="font-bold text-indigo-900 w-6 text-center">{qtdNoCarrinho}</span>
-                                                    <button onClick={() => addToCart(med.id, 1)} className="px-3 py-1 font-bold text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-r-lg transition-colors">+</button>
+                                                <div className="flex items-center bg-slate-50 rounded-lg border border-slate-300">
+                                                    <button type="button" onClick={() => addToCart(med.id, -1)} className="px-3 py-1 font-bold text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-l-lg transition-colors border-r border-slate-200">-</button>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        value={qtdNoCarrinho === 0 ? "" : qtdNoCarrinho}
+                                                        placeholder="0"
+                                                        onChange={(e) => handleManualChange(med.id, e.target.value)}
+                                                        className="w-14 bg-white text-center font-bold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none py-1"
+                                                    />
+                                                    <button type="button" onClick={() => addToCart(med.id, 1)} className="px-3 py-1 font-bold text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-r-lg transition-colors border-l border-slate-200">+</button>
                                                 </div>
                                             </div>
                                         </div>
