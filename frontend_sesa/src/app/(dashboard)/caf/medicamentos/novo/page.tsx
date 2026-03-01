@@ -41,7 +41,7 @@ export default function NovoMedicamentoPage() {
     };
 
     return (
-        <div className="p-8 w-full max-w-3xl mx-auto">
+        <div className="p-4 md:p-8 w-full max-w-3xl mx-auto">
             <div className="flex items-center space-x-4 mb-8">
                 <Link href="/caf/medicamentos">
                     <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors">

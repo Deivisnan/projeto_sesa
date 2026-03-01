@@ -79,7 +79,7 @@ export default function CAFPermissoesPage() {
     };
 
     return (
-        <div className="p-8 w-full max-w-7xl mx-auto flex flex-col h-[calc(100vh-4rem)]">
+        <div className="p-4 md:p-8 w-full max-w-7xl mx-auto flex flex-col h-[calc(100vh-4rem)]">
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Arquitetura de Catálogo</h1>
                 <p className="text-slate-500 mt-1">Defina cirurgicamente quis apresentações de medicamentos cada Unidade de Saúde pode enxergar e solicitar.</p>

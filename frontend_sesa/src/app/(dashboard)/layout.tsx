@@ -1,6 +1,6 @@
-import { Sidebar } from "@/components/layout/Sidebar";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 export const dynamic = "force-dynamic";
 
@@ -19,11 +19,8 @@ export default async function DashboardLayout({
   const user = JSON.parse(userCookie.value);
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar user={user} />
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {children}
-      </main>
-    </div>
+    <DashboardShell user={user}>
+      {children}
+    </DashboardShell>
   );
 }

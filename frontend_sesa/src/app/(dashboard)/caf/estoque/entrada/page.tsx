@@ -156,7 +156,7 @@ export default function EntradaEstoquePage() {
     if (loading) return <div className="p-8 text-center text-slate-500 font-medium">Carregando catálogos de suprimentos...</div>;
 
     return (
-        <div className="p-8 w-full max-w-4xl mx-auto">
+        <div className="p-4 md:p-8 w-full max-w-4xl mx-auto">
             <div className="flex items-center space-x-4 mb-8">
                 <Link href="/caf/estoque">
                     <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors">
@@ -347,12 +347,12 @@ export default function EntradaEstoquePage() {
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 md:col-span-2">
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700 block">Fabricação</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:col-span-2">
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-1">Quantidade Recebida <span className="text-red-500">*</span></label>
                                 <input required type="date" name="data_fabricacao" value={formData.data_fabricacao} onChange={handleChange} className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 bg-slate-50" />
                             </div>
-                            <div className="space-y-2">
+                            <div>
                                 <label className="text-sm font-semibold text-slate-700 block">Validade</label>
                                 <input required type="date" name="data_validade" value={formData.data_validade} onChange={handleChange} className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 bg-slate-50" />
                             </div>

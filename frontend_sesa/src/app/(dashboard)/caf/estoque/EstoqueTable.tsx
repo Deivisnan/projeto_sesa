@@ -267,7 +267,8 @@ export default function EstoqueTable({ estoqueInicial }: { estoqueInicial: any[]
                 </div>
 
                 {viewMode === "list" ? (
-                    <table className="w-full text-left border-collapse">
+                    <div className="overflow-x-auto">
+<table className="w-full text-left border-collapse">
                         <thead className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
                             <tr>
                                 <th className="w-12 px-4 py-4"></th>
@@ -393,6 +394,7 @@ export default function EstoqueTable({ estoqueInicial }: { estoqueInicial: any[]
                             )}
                         </tbody>
                     </table>
+</div>
                 ) : (
                     <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50">
                         {agrupado.length === 0 ? (

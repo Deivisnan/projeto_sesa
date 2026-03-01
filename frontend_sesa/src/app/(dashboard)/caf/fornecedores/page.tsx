@@ -27,7 +27,7 @@ export default async function FornecedoresPage() {
     const fornecedores = await getFornecedores();
 
     return (
-        <div className="p-8 w-full max-w-7xl mx-auto">
+        <div className="p-4 md:p-8 w-full max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Fornecedores Homologados</h1>
@@ -53,7 +53,8 @@ export default async function FornecedoresPage() {
                     </div>
                 </div>
 
-                <table className="w-full text-left">
+                <div className="overflow-x-auto">
+<table className="w-full text-left">
                     <thead className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
                         <tr>
                             <th className="px-6 py-4">Razão Social</th>
@@ -95,6 +96,7 @@ export default async function FornecedoresPage() {
                         )}
                     </tbody>
                 </table>
+</div>
             </div>
         </div>
     );

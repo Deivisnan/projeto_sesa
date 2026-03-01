@@ -65,7 +65,7 @@ export default function UnidadeEstoquePage() {
     );
 
     return (
-        <div className="p-8 w-full max-w-7xl mx-auto space-y-6">
+        <div className="p-4 md:p-8 w-full max-w-7xl mx-auto space-y-6">
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Farmácia Local</h1>

@@ -57,7 +57,7 @@ export default function UnidadeDashboardPage() {
     }
 
     return (
-        <div className="p-8 w-full max-w-7xl mx-auto space-y-8">
+        <div className="p-4 md:p-8 w-full max-w-7xl mx-auto space-y-8">
             <div>
                 <h1 className="text-3xl font-bold text-slate-900 tracking-tight text-center md:text-left">Painel da Unidade</h1>
                 <p className="text-slate-500 mt-1 text-center md:text-left">Bem-vindo(a), <b>{user?.nome}</b>. Esta é a situação atual da sua farmácia local.</p>

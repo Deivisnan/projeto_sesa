@@ -64,7 +64,7 @@ export default function TIUnidadesPage() {
     );
 
     return (
-        <div className="p-8 w-full max-w-7xl mx-auto space-y-6">
+        <div className="p-4 md:p-8 w-full max-w-7xl mx-auto space-y-6">
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Gestão de Unidades</h1>
@@ -157,9 +157,9 @@ export default function TIUnidadesPage() {
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Nome *</label>
                                 <input required type="text" className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" value={nome} onChange={e => setNome(e.target.value)} />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">CNES</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de Unidade</label>
                                     <input type="text" className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" value={cnes} onChange={e => setCnes(e.target.value)} />
                                 </div>
                                 <div>

@@ -31,7 +31,7 @@ export default async function UnidadesPage() {
     const unidades = await getUnidades();
 
     return (
-        <div className="p-8 w-full max-w-7xl mx-auto">
+        <div className="p-4 md:p-8 w-full max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Painel de Unidades</h1>
@@ -40,7 +40,8 @@ export default async function UnidadesPage() {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <table className="w-full text-left">
+                <div className="overflow-x-auto">
+<table className="w-full text-left">
                     <thead className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
                         <tr>
                             <th className="px-6 py-4">Nome da Unidade</th>
@@ -86,6 +87,7 @@ export default async function UnidadesPage() {
                         )}
                     </tbody>
                 </table>
+</div>
             </div>
         </div>
     );

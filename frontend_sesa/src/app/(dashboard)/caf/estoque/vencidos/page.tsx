@@ -55,7 +55,7 @@ export default function LotesVencidosPage() {
     const totalUnidadesVencidas = estoqueVencido.reduce((acc, curr) => acc + curr.quantidade, 0);
 
     return (
-        <div className="p-8 w-full max-w-7xl mx-auto min-h-[85vh]">
+        <div className="p-4 md:p-8 w-full max-w-7xl mx-auto min-h-[85vh]">
             <div className="mb-8">
                 <Link href="/caf/estoque" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-indigo-600 mb-4 transition-colors">
                     <ArrowLeft className="w-4 h-4 mr-1" />
@@ -99,7 +99,8 @@ export default function LotesVencidosPage() {
                         <span className="font-semibold text-slate-700">Lotes Agendados para Destruição</span>
                     </div>
 
-                    <table className="w-full text-left">
+                    <div className="overflow-x-auto">
+<table className="w-full text-left">
                         <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                             <tr>
                                 <th className="px-6 py-4">Lote / Validade</th>
@@ -168,6 +169,7 @@ export default function LotesVencidosPage() {
                             )}
                         </tbody>
                     </table>
+</div>
                 </div>
             )}
 
@@ -180,7 +182,8 @@ export default function LotesVencidosPage() {
                         </div>
                     </div>
 
-                    <table className="w-full text-left">
+                    <div className="overflow-x-auto">
+<table className="w-full text-left">
                         <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                             <tr>
                                 <th className="px-6 py-4">Data e Hora</th>
@@ -219,6 +222,7 @@ export default function LotesVencidosPage() {
                             )}
                         </tbody>
                     </table>
+</div>
                 </div>
             )}
         </div>

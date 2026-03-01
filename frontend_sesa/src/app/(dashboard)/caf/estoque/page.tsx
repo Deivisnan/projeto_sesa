@@ -30,7 +30,7 @@ export default async function EstoquePage() {
     const estoque = await getEstoqueCentral(user.unidade?.id);
 
     return (
-        <div className="p-8 w-full max-w-7xl mx-auto">
+        <div className="p-4 md:p-8 w-full max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Estoque Central da CAF</h1>

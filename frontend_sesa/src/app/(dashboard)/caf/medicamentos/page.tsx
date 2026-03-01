@@ -251,7 +251,7 @@ export default function MedicamentosPage() {
     }, [searchQuery, grupos]);
 
     return (
-        <div className="p-8 w-full max-w-7xl mx-auto">
+        <div className="p-4 md:p-8 w-full max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Catálogo de Medicamentos</h1>
@@ -313,120 +313,122 @@ export default function MedicamentosPage() {
                             Carregando diretório de medicamentos...
                         </div>
                     ) : (
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
-                                <tr>
-                                    <th className="px-6 py-4">Apresentação Farmacêutica</th>
-                                    <th className="px-6 py-4">Código (BR)</th>
-                                    <th className="px-6 py-4 text-right">Estoque</th>
-                                    <th className="px-6 py-4 text-center">Saúde</th>
-                                    <th className="px-6 py-4 text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {filteredGrupos.length === 0 ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
-                                            Nenhum registro encontrado para "{searchQuery}".
-                                        </td>
+                                        <th className="px-6 py-4">Apresentação Farmacêutica</th>
+                                        <th className="px-6 py-4">Código (BR)</th>
+                                        <th className="px-6 py-4 text-right">Estoque</th>
+                                        <th className="px-6 py-4 text-center">Saúde</th>
+                                        <th className="px-6 py-4 text-center">Ações</th>
                                     </tr>
-                                ) : (
-                                    filteredGrupos.map((grupo: any) => (
-                                        <React.Fragment key={grupo.id}>
-                                            {/* Cabecalho do Grupo */}
-                                            <tr className="bg-slate-50 border-b border-slate-100">
-                                                <td colSpan={2} className="px-6 py-4 font-bold text-slate-800 border-l-4 border-teal-500">
-                                                    <div className="flex items-center space-x-2">
-                                                        <Layers className="w-4 h-4 text-teal-600" />
-                                                        <span className="uppercase tracking-wider text-xs">{grupo.nome}</span>
-                                                        <span className="ml-2 px-2 py-0.5 bg-slate-200 text-slate-600 rounded-full text-xs">
-                                                            {grupo.medicamentos?.length || 0} Variações
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <div className="flex flex-col items-end">
-                                                        <span className="text-sm font-bold text-slate-700">{grupo.estoque_atual || 0} un.</span>
-                                                        <span className="text-xs text-slate-400 font-medium">Min: {grupo.estoque_minimo || 0} un.</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    {(() => {
-                                                        const badge = getStockBadge(grupo.estoque_atual || 0, grupo.estoque_minimo || 0);
-                                                        return <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${badge.class}`}>{badge.label}</span>;
-                                                    })()}
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <div className="flex items-center justify-center space-x-3">
-                                                        <button onClick={() => setHealthInfoModal({ data: grupo, isGrupo: true })} className="text-slate-400 hover:text-indigo-600 transition-colors" title="Explicar Saúde do Estoque">
-                                                            <HelpCircle className="w-4 h-4" />
-                                                        </button>
-                                                        <button onClick={() => setPasswordGate({ action: 'edit', item: { tipo: 'grupo', data: grupo } })} className="text-slate-400 hover:text-teal-600 transition-colors" title="Editar Princípio Ativo">
-                                                            <Edit2 className="w-4 h-4" />
-                                                        </button>
-                                                        <button onClick={() => setDeletingItem({ tipo: 'grupo', id: grupo.id, name: grupo.nome })} className="text-slate-400 hover:text-red-600 transition-colors" title="Excluir Princípio Ativo">
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-
-                                            {/* Sub-itens (Apresentações) */}
-                                            {grupo.medicamentos?.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={5} className="px-10 py-3 text-sm text-slate-400 italic">
-                                                        Nenhuma apresentação cadastrada.
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {filteredGrupos.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
+                                                Nenhum registro encontrado para "{searchQuery}".
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredGrupos.map((grupo: any) => (
+                                            <React.Fragment key={grupo.id}>
+                                                {/* Cabecalho do Grupo */}
+                                                <tr className="bg-slate-50 border-b border-slate-100">
+                                                    <td colSpan={2} className="px-6 py-4 font-bold text-slate-800 border-l-4 border-teal-500">
+                                                        <div className="flex items-center space-x-2">
+                                                            <Layers className="w-4 h-4 text-teal-600" />
+                                                            <span className="uppercase tracking-wider text-xs">{grupo.nome}</span>
+                                                            <span className="ml-2 px-2 py-0.5 bg-slate-200 text-slate-600 rounded-full text-xs">
+                                                                {grupo.medicamentos?.length || 0} Variações
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <div className="flex flex-col items-end">
+                                                            <span className="text-sm font-bold text-slate-700">{grupo.estoque_atual || 0} un.</span>
+                                                            <span className="text-xs text-slate-400 font-medium">Min: {grupo.estoque_minimo || 0} un.</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        {(() => {
+                                                            const badge = getStockBadge(grupo.estoque_atual || 0, grupo.estoque_minimo || 0);
+                                                            return <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${badge.class}`}>{badge.label}</span>;
+                                                        })()}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <div className="flex items-center justify-center space-x-3">
+                                                            <button onClick={() => setHealthInfoModal({ data: grupo, isGrupo: true })} className="text-slate-400 hover:text-indigo-600 transition-colors" title="Explicar Saúde do Estoque">
+                                                                <HelpCircle className="w-4 h-4" />
+                                                            </button>
+                                                            <button onClick={() => setPasswordGate({ action: 'edit', item: { tipo: 'grupo', data: grupo } })} className="text-slate-400 hover:text-teal-600 transition-colors" title="Editar Princípio Ativo">
+                                                                <Edit2 className="w-4 h-4" />
+                                                            </button>
+                                                            <button onClick={() => setDeletingItem({ tipo: 'grupo', id: grupo.id, name: grupo.nome })} className="text-slate-400 hover:text-red-600 transition-colors" title="Excluir Princípio Ativo">
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
-                                            ) : (
-                                                grupo.medicamentos.map((apresentacao: any) => (
-                                                    <tr key={apresentacao.id} className="hover:bg-slate-50/80 transition-colors">
-                                                        <td className="px-6 py-4 pl-10">
-                                                            <div className="flex items-center space-x-3">
-                                                                <div className="p-1.5 rounded-md bg-teal-50 text-teal-600">
-                                                                    <FlaskConical className="w-4 h-4" />
-                                                                </div>
-                                                                <span className="font-medium text-slate-700">{apresentacao.apresentacao}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            <span className="px-2.5 py-1 text-xs font-mono font-semibold rounded-md bg-white text-slate-600 border border-slate-200 shadow-sm">
-                                                                {apresentacao.codigo_br || 'N/A'}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-6 py-4 text-right">
-                                                            <div className="flex flex-col items-end">
-                                                                <span className="text-sm font-bold text-slate-700">{apresentacao.estoque_atual || 0} un.</span>
-                                                                <span className="text-xs text-slate-400 font-medium">Min: {apresentacao.estoque_minimo || 0} un.</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 text-center">
-                                                            {(() => {
-                                                                const badge = getStockBadge(apresentacao.estoque_atual || 0, apresentacao.estoque_minimo || 0);
-                                                                return <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${badge.class}`}>{badge.label}</span>;
-                                                            })()}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-center">
-                                                            <div className="flex items-center justify-center space-x-3">
-                                                                <button onClick={() => setHealthInfoModal({ data: apresentacao, isGrupo: false })} className="text-slate-400 hover:text-indigo-600 transition-colors" title="Explicar Saúde do Estoque">
-                                                                    <HelpCircle className="w-4 h-4" />
-                                                                </button>
-                                                                <button onClick={() => setPasswordGate({ action: 'edit', item: { tipo: 'apresentacao', data: apresentacao } })} className="text-slate-400 hover:text-teal-600 transition-colors" title="Editar Dosagem">
-                                                                    <Edit2 className="w-4 h-4" />
-                                                                </button>
-                                                                <button onClick={() => setDeletingItem({ tipo: 'apresentacao', id: apresentacao.id, name: apresentacao.apresentacao })} className="text-slate-400 hover:text-red-600 transition-colors" title="Excluir Dosagem">
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                </button>
-                                                            </div>
+
+                                                {/* Sub-itens (Apresentações) */}
+                                                {grupo.medicamentos?.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan={5} className="px-10 py-3 text-sm text-slate-400 italic">
+                                                            Nenhuma apresentação cadastrada.
                                                         </td>
                                                     </tr>
-                                                ))
-                                            )}
-                                        </React.Fragment>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                                                ) : (
+                                                    grupo.medicamentos.map((apresentacao: any) => (
+                                                        <tr key={apresentacao.id} className="hover:bg-slate-50/80 transition-colors">
+                                                            <td className="px-6 py-4 pl-10">
+                                                                <div className="flex items-center space-x-3">
+                                                                    <div className="p-1.5 rounded-md bg-teal-50 text-teal-600">
+                                                                        <FlaskConical className="w-4 h-4" />
+                                                                    </div>
+                                                                    <span className="font-medium text-slate-700">{apresentacao.apresentacao}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <span className="px-2.5 py-1 text-xs font-mono font-semibold rounded-md bg-white text-slate-600 border border-slate-200 shadow-sm">
+                                                                    {apresentacao.codigo_br || 'N/A'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                <div className="flex flex-col items-end">
+                                                                    <span className="text-sm font-bold text-slate-700">{apresentacao.estoque_atual || 0} un.</span>
+                                                                    <span className="text-xs text-slate-400 font-medium">Min: {apresentacao.estoque_minimo || 0} un.</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-center">
+                                                                {(() => {
+                                                                    const badge = getStockBadge(apresentacao.estoque_atual || 0, apresentacao.estoque_minimo || 0);
+                                                                    return <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${badge.class}`}>{badge.label}</span>;
+                                                                })()}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-center">
+                                                                <div className="flex items-center justify-center space-x-3">
+                                                                    <button onClick={() => setHealthInfoModal({ data: apresentacao, isGrupo: false })} className="text-slate-400 hover:text-indigo-600 transition-colors" title="Explicar Saúde do Estoque">
+                                                                        <HelpCircle className="w-4 h-4" />
+                                                                    </button>
+                                                                    <button onClick={() => setPasswordGate({ action: 'edit', item: { tipo: 'apresentacao', data: apresentacao } })} className="text-slate-400 hover:text-teal-600 transition-colors" title="Editar Dosagem">
+                                                                        <Edit2 className="w-4 h-4" />
+                                                                    </button>
+                                                                    <button onClick={() => setDeletingItem({ tipo: 'apresentacao', id: apresentacao.id, name: apresentacao.apresentacao })} className="text-slate-400 hover:text-red-600 transition-colors" title="Excluir Dosagem">
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </React.Fragment>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </div>
             )}
@@ -495,74 +497,76 @@ export default function MedicamentosPage() {
                             Carregando histórico...
                         </div>
                     ) : (
-                        <table className="w-full text-left table-fixed">
-                            <thead className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
-                                <tr>
-                                    <th className="px-6 py-4 w-48">Data/Hora</th>
-                                    <th className="px-6 py-4 w-40">Ação</th>
-                                    <th className="px-6 py-4 w-60">Usuário</th>
-                                    <th className="px-6 py-4">Detalhes da Edição</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 text-sm">
-                                {globalAudit.length === 0 ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left table-fixed">
+                                <thead className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
-                                            Nenhuma ação registrada até o momento.
-                                        </td>
+                                        <th className="px-6 py-4 w-48">Data/Hora</th>
+                                        <th className="px-6 py-4 w-40">Ação</th>
+                                        <th className="px-6 py-4 w-60">Usuário</th>
+                                        <th className="px-6 py-4">Detalhes da Edição</th>
                                     </tr>
-                                ) : (
-                                    globalAudit.map((log: any) => {
-                                        let parsedDetails: any = {};
-                                        try {
-                                            parsedDetails = JSON.parse(log.detalhes || '{}');
-                                        } catch (e) {
-                                            parsedDetails = { error: 'Invalid JSON' };
-                                        }
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 text-sm">
+                                    {globalAudit.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
+                                                Nenhuma ação registrada até o momento.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        globalAudit.map((log: any) => {
+                                            let parsedDetails: any = {};
+                                            try {
+                                                parsedDetails = JSON.parse(log.detalhes || '{}');
+                                            } catch (e) {
+                                                parsedDetails = { error: 'Invalid JSON' };
+                                            }
 
-                                        let AcaoBadge = null;
-                                        if (log.acao === 'CRIACAO') AcaoBadge = <span className="px-2.5 py-1 rounded bg-green-50 text-green-700 font-bold uppercase text-[10px] tracking-wider border border-green-200">Criação</span>;
-                                        else if (log.acao === 'EDICAO') AcaoBadge = <span className="px-2.5 py-1 rounded bg-amber-50 text-amber-700 font-bold uppercase text-[10px] tracking-wider border border-amber-200">Edição</span>;
-                                        else if (log.acao === 'EXCLUSAO') AcaoBadge = <span className="px-2.5 py-1 rounded bg-red-50 text-red-700 font-bold uppercase text-[10px] tracking-wider border border-red-200">Exclusão</span>;
+                                            let AcaoBadge = null;
+                                            if (log.acao === 'CRIACAO') AcaoBadge = <span className="px-2.5 py-1 rounded bg-green-50 text-green-700 font-bold uppercase text-[10px] tracking-wider border border-green-200">Criação</span>;
+                                            else if (log.acao === 'EDICAO') AcaoBadge = <span className="px-2.5 py-1 rounded bg-amber-50 text-amber-700 font-bold uppercase text-[10px] tracking-wider border border-amber-200">Edição</span>;
+                                            else if (log.acao === 'EXCLUSAO') AcaoBadge = <span className="px-2.5 py-1 rounded bg-red-50 text-red-700 font-bold uppercase text-[10px] tracking-wider border border-red-200">Exclusão</span>;
 
-                                        return (
-                                            <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
-                                                <td className="px-6 py-4 text-slate-600 font-medium">
-                                                    {new Date(log.data_hora).toLocaleString('pt-BR')}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    {AcaoBadge}
-                                                    <div className="mt-1 text-xs text-slate-500">{log.entidade === 'MedicamentoGrupo' ? 'Princípio Ativo' : 'Variação/Dosagem'}</div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center space-x-2">
-                                                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs uppercase">
-                                                            {(log.usuario?.nome || '?').charAt(0)}
+                                            return (
+                                                <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
+                                                    <td className="px-6 py-4 text-slate-600 font-medium">
+                                                        {new Date(log.data_hora).toLocaleString('pt-BR')}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        {AcaoBadge}
+                                                        <div className="mt-1 text-xs text-slate-500">{log.entidade === 'MedicamentoGrupo' ? 'Princípio Ativo' : 'Variação/Dosagem'}</div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center space-x-2">
+                                                            <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs uppercase">
+                                                                {(log.usuario?.nome || '?').charAt(0)}
+                                                            </div>
+                                                            <span className="font-medium text-slate-700 truncate">{log.usuario?.nome || 'Desconhecido'}</span>
                                                         </div>
-                                                        <span className="font-medium text-slate-700 truncate">{log.usuario?.nome || 'Desconhecido'}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-slate-600 font-mono text-xs overflow-hidden text-ellipsis whitespace-nowrap" title={log.detalhes}>
-                                                    {log.entidade === 'MedicamentoGrupo' ? (
-                                                        <span className="text-slate-500">
-                                                            {log.acao === 'CRIACAO' && `Criou ${parsedDetails.nome}`}
-                                                            {log.acao === 'EDICAO' && `Alterou P. Ativo: ${parsedDetails.nome} | Min: ${parsedDetails.estoque_minimo || 0}`}
-                                                            {log.acao === 'EXCLUSAO' && `Removeu ${parsedDetails.nome}`}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-slate-500">
-                                                            {log.acao === 'CRIACAO' && `Criou ${parsedDetails.apresentacao} (p/ ${parsedDetails.grupo_nome || 'Desconhecido'})`}
-                                                            {log.acao === 'EDICAO' && `Alterou Dosagem: ${parsedDetails.apresentacao || ''} (de ${parsedDetails.grupo_nome || 'Desconhecido'}) | Cód: ${parsedDetails.codigo_br || '-'} | Min: ${parsedDetails.estoque_minimo || 0}`}
-                                                            {log.acao === 'EXCLUSAO' && `Removeu ${parsedDetails.apresentacao} (de ${parsedDetails.grupo_nome || 'Desconhecido'})`}
-                                                        </span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-slate-600 font-mono text-xs overflow-hidden text-ellipsis whitespace-nowrap" title={log.detalhes}>
+                                                        {log.entidade === 'MedicamentoGrupo' ? (
+                                                            <span className="text-slate-500">
+                                                                {log.acao === 'CRIACAO' && `Criou ${parsedDetails.nome}`}
+                                                                {log.acao === 'EDICAO' && `Alterou P. Ativo: ${parsedDetails.nome} | Min: ${parsedDetails.estoque_minimo || 0}`}
+                                                                {log.acao === 'EXCLUSAO' && `Removeu ${parsedDetails.nome}`}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-slate-500">
+                                                                {log.acao === 'CRIACAO' && `Criou ${parsedDetails.apresentacao} (p/ ${parsedDetails.grupo_nome || 'Desconhecido'})`}
+                                                                {log.acao === 'EDICAO' && `Alterou Dosagem: ${parsedDetails.apresentacao || ''} (de ${parsedDetails.grupo_nome || 'Desconhecido'}) | Cód: ${parsedDetails.codigo_br || '-'} | Min: ${parsedDetails.estoque_minimo || 0}`}
+                                                                {log.acao === 'EXCLUSAO' && `Removeu ${parsedDetails.apresentacao} (de ${parsedDetails.grupo_nome || 'Desconhecido'})`}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </div>
             )}
@@ -647,7 +651,7 @@ export default function MedicamentosPage() {
                                 </>
                             ) : (
                                 <>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1">
                                             <label className="text-sm font-semibold text-slate-700">Dosagem <span className="text-red-500">*</span></label>
                                             <input
