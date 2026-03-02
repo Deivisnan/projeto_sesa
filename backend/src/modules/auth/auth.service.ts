@@ -35,7 +35,7 @@ class AuthService {
 
         const secret = process.env.JWT_SECRET || 'default_secret_key';
         const token = jwt.sign(payload, secret, {
-            expiresIn: '1d', // Token válido por 1 dia
+            expiresIn: '1h', // Token válido por 1 hora
         });
 
         return {

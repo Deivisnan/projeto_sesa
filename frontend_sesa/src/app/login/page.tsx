@@ -23,9 +23,10 @@ export default function LoginPage() {
 
             const { token, user } = response.data;
 
-            // Salva o token nos cookies para uso no Next.js Server Components
-            Cookies.set('sysfarma.token', token, { expires: 1 });
-            Cookies.set('sysfarma.user', JSON.stringify(user), { expires: 1 });
+            // Salva o token nos cookies com expiração de 1 hora (1 / 24 dias)
+            const hoursLeft = 1 / 24;
+            Cookies.set('sysfarma.token', token, { expires: hoursLeft });
+            Cookies.set('sysfarma.user', JSON.stringify(user), { expires: hoursLeft });
 
             api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 

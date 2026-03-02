@@ -16,6 +16,16 @@ api.interceptors.request.use((config) => {
     }
     return config;
 }, (error) => {
+    if (error.response && error.response.status === 401) {
+        if (typeof window !== 'undefined') {
+            Cookies.remove('sysfarma.token');
+            Cookies.remove('sysfarma.user');
+            // Redireciona para o login apenas se já não estiver na página de login para evitar loops
+            if (!window.location.pathname.includes('/login')) {
+                window.location.href = '/login?expired=true';
+            }
+        }
+    }
     return Promise.reject(error);
 });
 
