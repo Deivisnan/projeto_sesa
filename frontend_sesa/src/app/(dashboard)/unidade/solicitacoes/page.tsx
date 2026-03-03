@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { PackagePlus, Send, AlertCircle, Loader2 } from 'lucide-react';
 import api from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export default function SolicitacaoMedicamentosPage() {
     const { user } = useAuth();
@@ -60,7 +61,7 @@ export default function SolicitacaoMedicamentosPage() {
     };
 
     const handleSolicitacao = async () => {
-        if (Object.keys(carrinho).length === 0) return alert('Adicione pelo menos 1 item ao pedido!');
+        if (Object.keys(carrinho).length === 0) return toast.warning('Adicione pelo menos 1 item ao pedido!');
         setEnviando(true);
 
         try {
@@ -73,9 +74,9 @@ export default function SolicitacaoMedicamentosPage() {
 
             await api.post('/solicitacoes', orderPayload); // We need to write this endpoint in Backend later optionally
             setCarrinho({});
-            alert('A CAF Municipal registrou seu pedido. Eles vão analisar e despachar via Remessas.');
+            toast.success('A CAF Municipal registrou seu pedido. Eles vão analisar e despachar via Remessas.');
         } catch (err: any) {
-            alert(err.response?.data?.error || 'Ainda há uma necessidade de rota no Backend para solicitações');
+            toast.error(err.response?.data?.error || 'Ainda há uma necessidade de rota no Backend para solicitações');
         } finally {
             setEnviando(false);
         }

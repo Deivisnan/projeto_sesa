@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Database, Search, Plus, Trash2, ShieldAlert } from 'lucide-react';
 import api from '@/services/api';
+import { toast } from 'sonner';
 
 export default function TIUnidadesPage() {
     const [unidades, setUnidades] = useState<any[]>([]);
@@ -36,9 +37,10 @@ export default function TIUnidadesPage() {
             await api.post('/unidades', { nome, cnes, tipo, endereco });
             setShowModal(false);
             setNome(""); setCnes(""); setTipo("UBS"); setEndereco("");
+            toast.success("Unidade criada com sucesso!");
             loadUnidades();
         } catch (err: any) {
-            alert(err.response?.data?.error || "Erro ao criar unidade");
+            toast.error(err.response?.data?.error || "Erro ao criar unidade");
         }
     };
 
@@ -52,9 +54,10 @@ export default function TIUnidadesPage() {
             await api.delete(`/unidades/${showDeleteModal}`);
             setShowDeleteModal(null);
             setMasterPassword("");
+            toast.success("Unidade desativada com sucesso!");
             loadUnidades();
         } catch (err: any) {
-            alert(err.response?.data?.error || "Senha Incorreta ou Erro ao Deletar");
+            toast.error(err.response?.data?.error || "Senha Incorreta ou Erro ao Deletar");
         }
     };
 

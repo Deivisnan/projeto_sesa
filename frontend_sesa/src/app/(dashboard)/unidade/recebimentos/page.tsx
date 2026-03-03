@@ -4,12 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { Truck, Package, CheckCircle2, Clock, MapPin, Loader2 } from 'lucide-react';
 import api from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 export default function UnidadeRecebimentosPage() {
     const { user } = useAuth();
     const [solicitacoes, setSolicitacoes] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [processando, setProcessando] = useState<string | null>(null);
+    const [confirmRecebimentoId, setConfirmRecebimentoId] = useState<string | null>(null);
 
     useEffect(() => {
         if (user?.unidade?.id) {
@@ -30,16 +33,17 @@ export default function UnidadeRecebimentosPage() {
         }
     };
 
-    const handleReceber = async (id: string) => {
-        if (!confirm("Confirmar que você recebeu as caixas físicas listadas na nota?")) return;
+    const confirmRecebimento = async () => {
+        if (!confirmRecebimentoId) return;
 
         try {
-            setProcessando(id);
-            await api.post(`/solicitacoes/${id}/receber`);
-            alert("Recebimento confirmado! Remessa registrada como concluída.");
+            setProcessando(confirmRecebimentoId);
+            await api.post(`/solicitacoes/${confirmRecebimentoId}/receber`);
+            toast.success("Recebimento confirmado! Remessa registrada como concluída.");
             loadSolicitacoes();
+            setConfirmRecebimentoId(null);
         } catch (err: any) {
-            alert(err.response?.data?.message || err.response?.data?.error || "Erro ao confirmar recebimento");
+            toast.error(err.response?.data?.message || err.response?.data?.error || "Erro ao confirmar recebimento");
         } finally {
             setProcessando(null);
         }
@@ -137,7 +141,7 @@ export default function UnidadeRecebimentosPage() {
                             {sol.status === 'DESPACHADA' && (
                                 <div className="p-4 border-t border-slate-100 bg-blue-50">
                                     <button
-                                        onClick={() => handleReceber(sol.id)}
+                                        onClick={() => setConfirmRecebimentoId(sol.id)}
                                         disabled={processando === sol.id}
                                         className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2"
                                     >
@@ -165,6 +169,15 @@ export default function UnidadeRecebimentosPage() {
                     ))}
                 </div>
             )}
+
+            <ConfirmDialog
+                isOpen={!!confirmRecebimentoId}
+                title="Confirmar Recebimento"
+                message="Confirmar que você recebeu as caixas físicas listadas na nota?"
+                onConfirm={confirmRecebimento}
+                onCancel={() => setConfirmRecebimentoId(null)}
+                isLoading={!!processando}
+            />
         </div>
     );
 }

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Package, Search, History, Filter, Loader2, MinusCircle, AlertCircle, CheckCircle2 } from 'lucide-react';
 import api from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export default function UnidadeEstoquePage() {
     const { user } = useAuth();
@@ -46,13 +47,13 @@ export default function UnidadeEstoquePage() {
                 quantidade: dispenseQty,
                 observacao: dispenseObs
             });
-            alert("Dispensação realizada com sucesso!");
+            toast.success("Dispensação realizada com sucesso!");
             setSelectedItem(null);
             setDispenseQty(1);
             setDispenseObs("");
             loadEstoque();
         } catch (err: any) {
-            alert(err.response?.data?.message || "Erro ao realizar dispensação");
+            toast.error(err.response?.data?.message || "Erro ao realizar dispensação");
         } finally {
             setIsSaving(false);
         }

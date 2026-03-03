@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Search, Plus, ShieldAlert, Lock, Unlock, Pencil, X } from 'lucide-react';
 import api from '@/services/api';
+import { toast } from 'sonner';
 
 interface Usuario {
     id: string;
@@ -64,8 +65,9 @@ export default function TIUsuariosPage() {
             setShowModal(false);
             setNome(""); setEmail(""); setSenha(""); setPapel("USUARIO");
             loadData();
+            toast.success("Usuário criado com sucesso!");
         } catch (err: any) {
-            alert(err.response?.data?.message || err.response?.data?.error || "Erro ao criar usuário");
+            toast.error(err.response?.data?.message || err.response?.data?.error || "Erro ao criar usuário");
         }
     };
 
@@ -89,8 +91,9 @@ export default function TIUsuariosPage() {
             });
             setShowEditModal(null);
             loadData();
+            toast.success("Usuário editado com sucesso!");
         } catch (err: any) {
-            alert(err.response?.data?.message || err.response?.data?.error || "Erro ao editar usuário");
+            toast.error(err.response?.data?.message || err.response?.data?.error || "Erro ao editar usuário");
         }
     };
 
@@ -102,9 +105,9 @@ export default function TIUsuariosPage() {
             setShowResetModal(null);
             setMasterPassword("");
             setNovaSenha("");
-            alert("Senha do usuário redefinida com sucesso.");
+            toast.success("Senha do usuário redefinida com sucesso.");
         } catch (err: any) {
-            alert(err.response?.data?.message || err.response?.data?.error || "Acesso Negado ou Erro ao Redefinir Senha");
+            toast.error(err.response?.data?.message || err.response?.data?.error || "Acesso Negado ou Erro ao Redefinir Senha");
         }
     };
 

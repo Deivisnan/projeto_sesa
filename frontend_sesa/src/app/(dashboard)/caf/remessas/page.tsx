@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, Package, MapPin, Search, Loader2, CheckCircle2 } from 'lucide-react';
 import api from '@/services/api';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 export default function CAFRemessasPage() {
     const [solicitacoes, setSolicitacoes] = useState<any[]>([]);
@@ -10,6 +12,7 @@ export default function CAFRemessasPage() {
     const [termo, setTermo] = useState('');
     const [processando, setProcessando] = useState<string | null>(null);
     const [modalAlert, setModalAlert] = useState<{ show: boolean, solId: string, item: string, tentou: number, disponivel: number, itemId: string, idMedicamento: string } | null>(null);
+    const [confirmDespachoId, setConfirmDespachoId] = useState<string | null>(null);
 
     useEffect(() => {
         loadSolicitacoes();
@@ -27,29 +30,31 @@ export default function CAFRemessasPage() {
         }
     };
 
-    const handleDespachar = async (id: string) => {
-        if (!confirm("Confirmar o despacho físico desta remessa para a Unidade? O status será alterado para DESPACHADA.")) return;
+    const confirmDespacho = async () => {
+        if (!confirmDespachoId) return;
 
         try {
-            setProcessando(id);
-            await api.post(`/solicitacoes/${id}/despachar`);
-            alert("Remessa despachada com sucesso!");
+            setProcessando(confirmDespachoId);
+            await api.post(`/solicitacoes/${confirmDespachoId}/despachar`);
+            toast.success("Remessa despachada com sucesso!");
             loadSolicitacoes();
+            setConfirmDespachoId(null);
         } catch (err: any) {
             const erroMsg = err.response?.data?.message || err.response?.data?.error || "";
             if (erroMsg.startsWith("ESTOQUE_INSUFICIENTE|")) {
                 const parts = erroMsg.split("|");
                 setModalAlert({
                     show: true,
-                    solId: id,
+                    solId: confirmDespachoId,
                     item: parts[1],
                     disponivel: parseInt(parts[2]),
                     tentou: parseInt(parts[3]),
                     itemId: parts[4],
                     idMedicamento: parts[5]
                 });
+                setConfirmDespachoId(null);
             } else {
-                alert(erroMsg || "Erro ao despachar remessa");
+                toast.error(erroMsg || "Erro ao despachar remessa");
             }
         } finally {
             setProcessando(null);
@@ -70,27 +75,27 @@ export default function CAFRemessasPage() {
             });
             // Tenta Despachar novamente
             await api.post(`/solicitacoes/${modalAlert.solId}/despachar`);
-            alert("Remessa ajustada para o estoque disponível e despachada com sucesso!");
+            toast.success("Remessa ajustada para o estoque disponível e despachada com sucesso!");
             setModalAlert(null);
             loadSolicitacoes();
         } catch (err: any) {
-            alert(err.response?.data?.message || err.response?.data?.error || "Erro ao ajustar e despachar");
+            toast.error(err.response?.data?.message || err.response?.data?.error || "Erro ao ajustar e despachar");
         } finally {
             setProcessando(null);
         }
     };
 
     const handleRecusar = async (id: string, motivoAutom?: string) => {
-        const motivo = motivoAutom || prompt("Motivo para cancelar a remessa:", "Cancelado por falta de estoque durante separação física.");
+        const motivo = motivoAutom || window.prompt("Motivo para cancelar a remessa:", "Cancelado por falta de estoque durante separação física.");
         if (motivo === null) return;
 
         try {
             setProcessando(id);
             await api.post(`/solicitacoes/${id}/recusar`, { motivo });
-            alert("Remessa cancelada com sucesso.");
+            toast.success("Remessa cancelada com sucesso.");
             loadSolicitacoes();
         } catch (err: any) {
-            alert(err.response?.data?.message || err.response?.data?.error || "Erro ao cancelar remessa");
+            toast.error(err.response?.data?.message || err.response?.data?.error || "Erro ao cancelar remessa");
         } finally {
             setProcessando(null);
         }
@@ -183,7 +188,7 @@ export default function CAFRemessasPage() {
                             {sol.status === 'EM_SEPARACAO' && (
                                 <div className="p-4 border-t border-slate-100 bg-slate-50">
                                     <button
-                                        onClick={() => handleDespachar(sol.id)}
+                                        onClick={() => setConfirmDespachoId(sol.id)}
                                         disabled={processando === sol.id}
                                         className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2"
                                     >
@@ -256,6 +261,15 @@ export default function CAFRemessasPage() {
                     </div>
                 </div>
             )}
+
+            <ConfirmDialog
+                isOpen={!!confirmDespachoId}
+                title="Confirmar Despacho Central"
+                message="Confirmar o despacho físico desta remessa para a Unidade? O status será alterado para DESPACHADA e você não poderá desfazer a ação por aqui."
+                onConfirm={confirmDespacho}
+                onCancel={() => setConfirmDespachoId(null)}
+                isLoading={!!processando}
+            />
         </div>
     );
 }

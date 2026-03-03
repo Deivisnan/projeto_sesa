@@ -5,6 +5,8 @@ import { ShieldAlert, Trash2, CalendarX, ArrowLeft, History, Filter } from "luci
 import Link from "next/link";
 import Cookies from 'js-cookie';
 import api from '@/services/api';
+import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 export default function LotesVencidosPage() {
     const [estoqueVencido, setEstoqueVencido] = useState<any[]>([]);
@@ -12,6 +14,7 @@ export default function LotesVencidosPage() {
     const [loading, setLoading] = useState(true);
     const [processando, setProcessando] = useState<string | null>(null);
     const [aba, setAba] = useState<'A_DESCARTAR' | 'HISTORICO'>('A_DESCARTAR');
+    const [confirmDescarte, setConfirmDescarte] = useState<{ idEstoque: string, loteStr: string } | null>(null);
 
     const loadVencidos = async () => {
         try {
@@ -37,16 +40,17 @@ export default function LotesVencidosPage() {
         loadVencidos();
     }, []);
 
-    const handleDescartar = async (idEstoque: string, loteStr: string) => {
-        if (!confirm(`Tem certeza que deseja registrar o descarte do Lote Vencido ${loteStr}? A quantia será permanentemente zerada no sistema e um log de auditoria será gravado.`)) return;
+    const executaDescarte = async () => {
+        if (!confirmDescarte) return;
 
         try {
-            setProcessando(idEstoque);
-            await api.post(`/estoque/descarte/${idEstoque}`);
-            alert('Descarte registrado com sucesso!');
+            setProcessando(confirmDescarte.idEstoque);
+            await api.post(`/estoque/descarte/${confirmDescarte.idEstoque}`);
+            toast.success('Descarte registrado com sucesso!');
             loadVencidos();
+            setConfirmDescarte(null);
         } catch (err: any) {
-            alert(err.response?.data?.message || err.response?.data?.error || "Erro ao descartar");
+            toast.error(err.response?.data?.message || err.response?.data?.error || "Erro ao descartar");
         } finally {
             setProcessando(null);
         }
@@ -100,76 +104,76 @@ export default function LotesVencidosPage() {
                     </div>
 
                     <div className="overflow-x-auto">
-<table className="w-full text-left">
-                        <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
-                            <tr>
-                                <th className="px-6 py-4">Lote / Validade</th>
-                                <th className="px-6 py-4">Medicamento Categoria</th>
-                                <th className="px-6 py-4 text-center">Dias Vencidos</th>
-                                <th className="px-6 py-4 text-center">Unidades</th>
-                                <th className="px-6 py-4 text-right">Ação Logística</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {loading ? (
+                        <table className="w-full text-left">
+                            <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                                 <tr>
-                                    <td colSpan={5} className="py-12 text-center text-slate-500">
-                                        <div className="animate-spin w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full mx-auto mb-4"></div>
-                                        Inspecionando armazéns virtuais...
-                                    </td>
+                                    <th className="px-6 py-4">Lote / Validade</th>
+                                    <th className="px-6 py-4">Medicamento Categoria</th>
+                                    <th className="px-6 py-4 text-center">Dias Vencidos</th>
+                                    <th className="px-6 py-4 text-center">Unidades</th>
+                                    <th className="px-6 py-4 text-right">Ação Logística</th>
                                 </tr>
-                            ) : estoqueVencido.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="py-16 text-center text-slate-500 flex-col items-center">
-                                        <ShieldAlert className="w-12 h-12 text-teal-200 mx-auto mb-3" />
-                                        <p className="text-lg font-medium text-slate-700">Galpão Saudável!</p>
-                                        <p className="text-sm mt-1">Nenhum lote com data de validade estourada encontrado no momento.</p>
-                                    </td>
-                                </tr>
-                            ) : (
-                                estoqueVencido.map((item) => {
-                                    const msAtraso = new Date().getTime() - new Date(item.lote.data_validade).getTime();
-                                    const diasAtraso = Math.floor(msAtraso / (1000 * 60 * 60 * 24));
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={5} className="py-12 text-center text-slate-500">
+                                            <div className="animate-spin w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full mx-auto mb-4"></div>
+                                            Inspecionando armazéns virtuais...
+                                        </td>
+                                    </tr>
+                                ) : estoqueVencido.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="py-16 text-center text-slate-500 flex-col items-center">
+                                            <ShieldAlert className="w-12 h-12 text-teal-200 mx-auto mb-3" />
+                                            <p className="text-lg font-medium text-slate-700">Galpão Saudável!</p>
+                                            <p className="text-sm mt-1">Nenhum lote com data de validade estourada encontrado no momento.</p>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    estoqueVencido.map((item) => {
+                                        const msAtraso = new Date().getTime() - new Date(item.lote.data_validade).getTime();
+                                        const diasAtraso = Math.floor(msAtraso / (1000 * 60 * 60 * 24));
 
-                                    return (
-                                        <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="font-bold text-slate-900 font-mono tracking-tight">{item.lote.codigo_lote}</div>
-                                                <div className="text-xs font-semibold text-rose-500 mt-0.5">Venceu em: {new Date(item.lote.data_validade).toLocaleDateString('pt-BR')}</div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="font-medium text-slate-800">{item.lote.medicamento?.grupo?.nome}</div>
-                                                <div className="text-xs text-slate-500">{item.lote.medicamento?.apresentacao}</div>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200 shadow-sm">
-                                                    - {diasAtraso} dias
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="text-lg font-black text-slate-700">{item.quantidade}</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button
-                                                    onClick={() => handleDescartar(item.id, item.lote.codigo_lote)}
-                                                    disabled={processando === item.id}
-                                                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all shadow-md focus:ring-2 focus:ring-offset-2 focus:ring-rose-500"
-                                                >
-                                                    {processando === item.id ? (
-                                                        <div className="animate-spin w-4 h-4 border-2 border-white/40 border-t-white rounded-full" />
-                                                    ) : (
-                                                        <Trash2 className="w-4 h-4" />
-                                                    )}
-                                                    Registrar Descarte
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    )
-                                })
-                            )}
-                        </tbody>
-                    </table>
-</div>
+                                        return (
+                                            <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="font-bold text-slate-900 font-mono tracking-tight">{item.lote.codigo_lote}</div>
+                                                    <div className="text-xs font-semibold text-rose-500 mt-0.5">Venceu em: {new Date(item.lote.data_validade).toLocaleDateString('pt-BR')}</div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="font-medium text-slate-800">{item.lote.medicamento?.grupo?.nome}</div>
+                                                    <div className="text-xs text-slate-500">{item.lote.medicamento?.apresentacao}</div>
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200 shadow-sm">
+                                                        - {diasAtraso} dias
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className="text-lg font-black text-slate-700">{item.quantidade}</span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button
+                                                        onClick={() => setConfirmDescarte({ idEstoque: item.id, loteStr: item.lote.codigo_lote })}
+                                                        disabled={processando === item.id}
+                                                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all shadow-md focus:ring-2 focus:ring-offset-2 focus:ring-rose-500"
+                                                    >
+                                                        {processando === item.id ? (
+                                                            <div className="animate-spin w-4 h-4 border-2 border-white/40 border-t-white rounded-full" />
+                                                        ) : (
+                                                            <Trash2 className="w-4 h-4" />
+                                                        )}
+                                                        Registrar Descarte
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
 
@@ -183,48 +187,57 @@ export default function LotesVencidosPage() {
                     </div>
 
                     <div className="overflow-x-auto">
-<table className="w-full text-left">
-                        <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
-                            <tr>
-                                <th className="px-6 py-4">Data e Hora</th>
-                                <th className="px-6 py-4">Lote Destruído</th>
-                                <th className="px-6 py-4">Responsável</th>
-                                <th className="px-6 py-4 text-center">Unidades Perdidas</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {historicoDescartes.length === 0 ? (
+                        <table className="w-full text-left">
+                            <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
                                 <tr>
-                                    <td colSpan={4} className="py-12 text-center text-slate-500">
-                                        Nenhum registro de descarte efetuado nesta unidade.
-                                    </td>
+                                    <th className="px-6 py-4">Data e Hora</th>
+                                    <th className="px-6 py-4">Lote Destruído</th>
+                                    <th className="px-6 py-4">Responsável</th>
+                                    <th className="px-6 py-4 text-center">Unidades Perdidas</th>
                                 </tr>
-                            ) : (
-                                historicoDescartes.map((log) => (
-                                    <tr key={log.id} className="hover:bg-slate-50">
-                                        <td className="px-6 py-4 text-sm font-medium text-slate-700">
-                                            {new Date(log.data_movimentacao).toLocaleString('pt-BR')}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="font-bold text-slate-900 font-mono text-sm">{log.lote.codigo_lote}</div>
-                                            <div className="text-xs text-slate-500">{log.lote.medicamento?.grupo?.nome} - {log.lote.medicamento?.apresentacao}</div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-600 font-medium">
-                                            {log.usuario.nome}
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="inline-flex font-bold px-2 py-1 rounded bg-slate-100 text-slate-800">
-                                                {Math.abs(log.quantidade)}
-                                            </span>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {historicoDescartes.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={4} className="py-12 text-center text-slate-500">
+                                            Nenhum registro de descarte efetuado nesta unidade.
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-</div>
+                                ) : (
+                                    historicoDescartes.map((log) => (
+                                        <tr key={log.id} className="hover:bg-slate-50">
+                                            <td className="px-6 py-4 text-sm font-medium text-slate-700">
+                                                {new Date(log.data_movimentacao).toLocaleString('pt-BR')}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-bold text-slate-900 font-mono text-sm">{log.lote.codigo_lote}</div>
+                                                <div className="text-xs text-slate-500">{log.lote.medicamento?.grupo?.nome} - {log.lote.medicamento?.apresentacao}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-600 font-medium">
+                                                {log.usuario.nome}
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className="inline-flex font-bold px-2 py-1 rounded bg-slate-100 text-slate-800">
+                                                    {Math.abs(log.quantidade)}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
+
+            <ConfirmDialog
+                isOpen={!!confirmDescarte}
+                title="Confirmar Descarte"
+                message={`Tem certeza que deseja registrar o descarte do Lote Vencido ${confirmDescarte?.loteStr}? A quantia será permanentemente zerada no sistema e um log de auditoria será gravado.`}
+                onConfirm={executaDescarte}
+                onCancel={() => setConfirmDescarte(null)}
+                isLoading={!!processando}
+            />
         </div>
     );
 }
