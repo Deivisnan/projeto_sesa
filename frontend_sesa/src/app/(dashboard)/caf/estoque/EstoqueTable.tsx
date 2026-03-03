@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Package, Layers, Search, LayoutGrid, ChevronDown, ChevronRight, List, Filter, HelpCircle, X, Download, ShieldAlert } from "lucide-react";
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function EstoqueTable({ estoqueInicial }: { estoqueInicial: any[] }) {
     const [searchQuery, setSearchQuery] = useState("");
@@ -104,7 +105,7 @@ export default function EstoqueTable({ estoqueInicial }: { estoqueInicial: any[]
             });
 
             if (rows.length === 0) {
-                alert("Nenhum dado disponível para exportar no arquivo atual.");
+                toast.warning("Nenhum dado disponível para exportar no arquivo atual.");
                 return;
             }
 
@@ -120,7 +121,7 @@ export default function EstoqueTable({ estoqueInicial }: { estoqueInicial: any[]
             doc.save(`estoque_central_caf_${new Date().toISOString().split('T')[0]}.pdf`);
         } catch (err: any) {
             console.error("Erro ao gerar PDF:", err);
-            alert("Não foi possível gerar o arquivo PDF.");
+            toast.error("Não foi possível gerar o arquivo PDF.");
         }
     };
 
@@ -268,133 +269,133 @@ export default function EstoqueTable({ estoqueInicial }: { estoqueInicial: any[]
 
                 {viewMode === "list" ? (
                     <div className="overflow-x-auto">
-<table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
-                            <tr>
-                                <th className="w-12 px-4 py-4"></th>
-                                <th className="px-6 py-4">Medicamento / Suprimento</th>
-                                <th className="px-6 py-4">Estoque Mínimo</th>
-                                <th className="px-6 py-4">Lotes Ativos</th>
-                                <th className="px-6 py-4 text-right">Quantidade Total</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {agrupado.length === 0 ? (
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600">
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
-                                        Nenhum estoque registrado na CAF ou filtro não encontrou resultados.
-                                    </td>
+                                    <th className="w-12 px-4 py-4"></th>
+                                    <th className="px-6 py-4">Medicamento / Suprimento</th>
+                                    <th className="px-6 py-4">Estoque Mínimo</th>
+                                    <th className="px-6 py-4">Lotes Ativos</th>
+                                    <th className="px-6 py-4 text-right">Quantidade Total</th>
                                 </tr>
-                            ) : (
-                                agrupado.map((grupo: any) => {
-                                    const isExpanded = expandedGrupos.includes(grupo.medicamentoId);
-                                    const isLowStock = grupo.quantidadeTotal <= grupo.estoqueMinimo;
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {agrupado.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                                            Nenhum estoque registrado na CAF ou filtro não encontrou resultados.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    agrupado.map((grupo: any) => {
+                                        const isExpanded = expandedGrupos.includes(grupo.medicamentoId);
+                                        const isLowStock = grupo.quantidadeTotal <= grupo.estoqueMinimo;
 
-                                    return (
-                                        <React.Fragment key={grupo.medicamentoId}>
-                                            {/* Row PAI */}
-                                            <tr
-                                                onClick={() => toggleExpand(grupo.medicamentoId)}
-                                                className="hover:bg-slate-50 transition-colors cursor-pointer group"
-                                            >
-                                                <td className="px-4 py-4 text-center">
-                                                    <button className="text-slate-400 group-hover:text-teal-600 transition-colors">
-                                                        {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
-                                                    </button>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-bold text-slate-900">{grupo.nomePai}</span>
-                                                        <span className="text-sm text-slate-500">{grupo.apresentacao}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-slate-600">
-                                                    {grupo.estoqueMinimo} un.
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700">
-                                                        {grupo.lotes.length} lote(s)
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <div className="flex flex-col items-end">
-                                                        <span className={`text-xl font-bold tracking-tight border-b-2 pb-0.5 ${isLowStock ? 'text-red-600 border-red-500/30' : 'text-slate-900 border-teal-500/30'}`}>
-                                                            {grupo.quantidadeTotal.toLocaleString()} un.
+                                        return (
+                                            <React.Fragment key={grupo.medicamentoId}>
+                                                {/* Row PAI */}
+                                                <tr
+                                                    onClick={() => toggleExpand(grupo.medicamentoId)}
+                                                    className="hover:bg-slate-50 transition-colors cursor-pointer group"
+                                                >
+                                                    <td className="px-4 py-4 text-center">
+                                                        <button className="text-slate-400 group-hover:text-teal-600 transition-colors">
+                                                            {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+                                                        </button>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-bold text-slate-900">{grupo.nomePai}</span>
+                                                            <span className="text-sm text-slate-500">{grupo.apresentacao}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-slate-600">
+                                                        {grupo.estoqueMinimo} un.
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700">
+                                                            {grupo.lotes.length} lote(s)
                                                         </span>
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <div className="flex flex-col items-end">
+                                                            <span className={`text-xl font-bold tracking-tight border-b-2 pb-0.5 ${isLowStock ? 'text-red-600 border-red-500/30' : 'text-slate-900 border-teal-500/30'}`}>
+                                                                {grupo.quantidadeTotal.toLocaleString()} un.
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
 
-                                            {/* Rows FILHAS */}
-                                            {isExpanded && grupo.lotes.map((lote: any) => {
-                                                const today = new Date();
-                                                today.setHours(0, 0, 0, 0);
-                                                const validade = new Date(lote.data_validade);
-                                                validade.setHours(0, 0, 0, 0);
+                                                {/* Rows FILHAS */}
+                                                {isExpanded && grupo.lotes.map((lote: any) => {
+                                                    const today = new Date();
+                                                    today.setHours(0, 0, 0, 0);
+                                                    const validade = new Date(lote.data_validade);
+                                                    validade.setHours(0, 0, 0, 0);
 
-                                                // Diff in days
-                                                const diffTime = validade.getTime() - today.getTime();
-                                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                                    // Diff in days
+                                                    const diffTime = validade.getTime() - today.getTime();
+                                                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-                                                let statusColor = 'bg-teal-400';
-                                                let textStatusColor = 'text-teal-700';
-                                                let tagBg = 'bg-teal-50';
-                                                let labelValidade = 'No Prazo';
+                                                    let statusColor = 'bg-teal-400';
+                                                    let textStatusColor = 'text-teal-700';
+                                                    let tagBg = 'bg-teal-50';
+                                                    let labelValidade = 'No Prazo';
 
-                                                if (diffDays < 0) {
-                                                    statusColor = 'bg-red-500';
-                                                    textStatusColor = 'text-red-700';
-                                                    tagBg = 'bg-red-50 border-red-200';
-                                                    labelValidade = 'Vencido';
-                                                } else if (diffDays <= 90) {
-                                                    statusColor = 'bg-amber-400';
-                                                    textStatusColor = 'text-amber-700';
-                                                    tagBg = 'bg-amber-50 border-amber-200';
-                                                    labelValidade = diffDays === 0 ? 'Vence Hoje' : `${diffDays} dias`;
-                                                }
+                                                    if (diffDays < 0) {
+                                                        statusColor = 'bg-red-500';
+                                                        textStatusColor = 'text-red-700';
+                                                        tagBg = 'bg-red-50 border-red-200';
+                                                        labelValidade = 'Vencido';
+                                                    } else if (diffDays <= 90) {
+                                                        statusColor = 'bg-amber-400';
+                                                        textStatusColor = 'text-amber-700';
+                                                        tagBg = 'bg-amber-50 border-amber-200';
+                                                        labelValidade = diffDays === 0 ? 'Vence Hoje' : `${diffDays} dias`;
+                                                    }
 
-                                                return (
-                                                    <tr key={lote.id} className="bg-slate-50/80 border-t border-dashed border-slate-200 hover:bg-slate-100/80 transition-colors">
-                                                        <td className="px-4 py-3"></td>
-                                                        <td className="px-6 py-3 pl-12" colSpan={2}>
-                                                            <div className="flex items-center space-x-3">
-                                                                <div className={`w-2 h-2 rounded-full ${statusColor}`}></div>
-                                                                <span className="text-sm font-medium text-slate-700">
-                                                                    Lote: <span className="font-mono text-indigo-700">{lote.codigo_lote}</span>
-                                                                </span>
-                                                                <span className="text-xs text-slate-500 px-2 border-l border-slate-300">
-                                                                    {lote.fornecedor.razao_social}
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-3">
-                                                            <div className="flex items-center space-x-3">
-                                                                <div className="flex flex-col">
-                                                                    <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Validade</span>
-                                                                    <span className={`text-sm font-bold ${diffDays < 0 ? 'text-red-600' : 'text-slate-700'}`}>
-                                                                        {validade.toLocaleDateString()}
+                                                    return (
+                                                        <tr key={lote.id} className="bg-slate-50/80 border-t border-dashed border-slate-200 hover:bg-slate-100/80 transition-colors">
+                                                            <td className="px-4 py-3"></td>
+                                                            <td className="px-6 py-3 pl-12" colSpan={2}>
+                                                                <div className="flex items-center space-x-3">
+                                                                    <div className={`w-2 h-2 rounded-full ${statusColor}`}></div>
+                                                                    <span className="text-sm font-medium text-slate-700">
+                                                                        Lote: <span className="font-mono text-indigo-700">{lote.codigo_lote}</span>
+                                                                    </span>
+                                                                    <span className="text-xs text-slate-500 px-2 border-l border-slate-300">
+                                                                        {lote.fornecedor.razao_social}
                                                                     </span>
                                                                 </div>
-                                                                <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${tagBg} ${textStatusColor}`}>
-                                                                    {labelValidade}
+                                                            </td>
+                                                            <td className="px-6 py-3">
+                                                                <div className="flex items-center space-x-3">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Validade</span>
+                                                                        <span className={`text-sm font-bold ${diffDays < 0 ? 'text-red-600' : 'text-slate-700'}`}>
+                                                                            {validade.toLocaleDateString()}
+                                                                        </span>
+                                                                    </div>
+                                                                    <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${tagBg} ${textStatusColor}`}>
+                                                                        {labelValidade}
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-3 text-right">
+                                                                <span className="text-sm font-semibold text-slate-700 bg-white px-3 py-1 rounded border border-slate-200">
+                                                                    {lote.estoqueAtual.toLocaleString()} un.
                                                                 </span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-3 text-right">
-                                                            <span className="text-sm font-semibold text-slate-700 bg-white px-3 py-1 rounded border border-slate-200">
-                                                                {lote.estoqueAtual.toLocaleString()} un.
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </React.Fragment>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
-</div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </React.Fragment>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 ) : (
                     <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50">
                         {agrupado.length === 0 ? (

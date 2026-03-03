@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, CheckSquare, Square, Building2, Save } from 'lucide-react';
 import api from '@/services/api';
+import { toast } from 'sonner';
 
 export default function CAFPermissoesPage() {
     const [unidades, setUnidades] = useState<any[]>([]);
@@ -70,9 +71,9 @@ export default function CAFPermissoesPage() {
             await api.post(`/unidades/${selectedUnidade}/medicamentos-permitidos`, {
                 ids_medicamentos: allowedMedicamentos
             });
-            alert('Catálogo de permissões salvo com sucesso!');
+            toast.success('Catálogo de permissões salvo com sucesso!');
         } catch (err: any) {
-            alert(err.response?.data?.message || err.response?.data?.error || 'Erro ao salvar permissões');
+            toast.error(err.response?.data?.message || err.response?.data?.error || 'Erro ao salvar permissões');
         } finally {
             setLoading(false);
         }

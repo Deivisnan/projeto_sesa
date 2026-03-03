@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Beaker, FileText, CheckCircle2, Clock, MapPin, Search, Loader2, Download } from 'lucide-react';
 import api from '@/services/api';
+import { toast } from 'sonner';
 
 export default function CAFSolicitacoesPage() {
     const [solicitacoes, setSolicitacoes] = useState<any[]>([]);
@@ -51,7 +52,7 @@ export default function CAFSolicitacoesPage() {
             }));
 
             await api.post(`/solicitacoes/${solic.id}/aprovar`, { itens: itensAprovados });
-            alert("Pedido aprovado e enviado para separação com sucesso!");
+            toast.success("Pedido aprovado e enviado para separação com sucesso!");
             loadSolicitacoes();
         } catch (err: any) {
             const erroMsg = err.response?.data?.message || err.response?.data?.error || "";
@@ -66,7 +67,7 @@ export default function CAFSolicitacoesPage() {
                     itemId: parts[4]
                 });
             } else {
-                alert(erroMsg || "Erro ao aprovar pedido");
+                toast.error(erroMsg || "Erro ao aprovar pedido");
             }
         } finally {
             setProcessando(null);
@@ -80,10 +81,10 @@ export default function CAFSolicitacoesPage() {
         try {
             setProcessando(id);
             await api.post(`/solicitacoes/${id}/recusar`, { motivo });
-            alert("Solicitação recusada com sucesso.");
+            toast.success("Solicitação recusada com sucesso.");
             loadSolicitacoes();
         } catch (err: any) {
-            alert(err.response?.data?.message || err.response?.data?.error || "Erro ao recusar");
+            toast.error(err.response?.data?.message || err.response?.data?.error || "Erro ao recusar");
         } finally {
             setProcessando(null);
         }
@@ -93,7 +94,7 @@ export default function CAFSolicitacoesPage() {
         if (!modalAlert) return;
         handleQtdChange(modalAlert.solId, modalAlert.itemId, modalAlert.disponivel.toString());
         setModalAlert(null);
-        alert(`A quantidade de ${modalAlert.item} foi ajustada para ${modalAlert.disponivel}. Você pode revisar e então tentar Aprovar novamente na tabela externa.`);
+        toast.info(`A quantidade de ${modalAlert.item} foi ajustada para ${modalAlert.disponivel}. Você pode revisar e então tentar Aprovar novamente na tabela externa.`);
     };
 
     const handleQtdChange = (id_solic: string, id_item: string, val: string) => {
@@ -108,7 +109,7 @@ export default function CAFSolicitacoesPage() {
 
     const handleExportar = async (formato: 'csv' | 'pdf') => {
         if (!dataInicio || !dataFim) {
-            alert("Selecione a data de Início e Fim para exportar o relatório.");
+            toast.warning("Selecione a data de Início e Fim para exportar o relatório.");
             return;
         }
 
@@ -118,7 +119,7 @@ export default function CAFSolicitacoesPage() {
             const solicitacoes = response.data;
 
             if (!solicitacoes || solicitacoes.length === 0) {
-                alert("Nenhum dado encontrado neste período.");
+                toast.warning("Nenhum dado encontrado neste período.");
                 return;
             }
 
@@ -170,7 +171,7 @@ export default function CAFSolicitacoesPage() {
             }
         } catch (err: any) {
             console.error(err);
-            alert("Erro ao exportar relatório. Verifique se há dados no período ou se a API está online.");
+            toast.error("Erro ao exportar relatório. Verifique se há dados no período ou se a API está online.");
         }
     };
 
