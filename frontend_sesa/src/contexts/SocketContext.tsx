@@ -41,7 +41,38 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         // We put it inside a ref or keep it scoped safely
         const handlers: Record<string, Function[]> = {};
 
-        // Listen to all broadcast events on the sysfarma channel from Backend
+        // Escuta TODA E QUALQUER mudança nas tabelas do banco e retransmite para os componentes React
+        channel.on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+            console.log('Postgres Change Event:', payload);
+
+            if (payload.table === 'solicitacoes') {
+                if (payload.eventType === 'INSERT') {
+                    const cb = handlers['nova_solicitacao'] || [];
+                    cb.forEach(f => f({ mensagem: 'Nova solicitação recebida da Unidade!' }));
+                } else if (payload.eventType === 'UPDATE') {
+                    const newStatus = payload.new.status;
+                    const oldStatus = payload.old.status;
+
+                    if (newStatus === 'DESPACHADA' && oldStatus !== 'DESPACHADA') {
+                        const cb = handlers['remessa_despachada'] || [];
+                        cb.forEach(f => f({ id_solicitacao: payload.new.id, mensagem: 'Carga a caminho!' }));
+                    } else if (newStatus === 'RECUSADA' && oldStatus !== 'RECUSADA') {
+                        const cb = handlers['solicitacao_recusada'] || [];
+                        cb.forEach(f => f({ id_solicitacao: payload.new.id, mensagem: 'Sua solicitação foi recusada.' }));
+                    } else {
+                        const cb = handlers['solicitacao_atualizada'] || [];
+                        cb.forEach(f => f({ mensagem: 'Sua solicitação foi atualizada pela CAF.' }));
+                    }
+                }
+            } else if (payload.table === 'remessas') {
+                if (payload.eventType === 'UPDATE' && payload.new.status === 'RECEBIDA' && payload.old.status !== 'RECEBIDA') {
+                    const cb = handlers['remessa_recebida'] || [];
+                    cb.forEach(f => f({ mensagem: 'Recebimento confirmado pelo Almoxarifado!' }));
+                }
+            }
+        });
+
+        // Listen to explicit backend broadcast events (fallback)
         channel.on('broadcast', { event: '*' }, (payload) => {
             console.log('Supabase Realtime Recebido:', payload.event, payload.payload);
             const callbacks = handlers[payload.event] || [];
