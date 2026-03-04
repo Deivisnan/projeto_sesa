@@ -44,7 +44,7 @@ export class SolicitacoesService {
         });
 
         try {
-            sysfarmaChannel.send({
+            await sysfarmaChannel.send({
                 type: 'broadcast',
                 event: 'nova_solicitacao',
                 payload: { mensagem: 'Nova solicitação recebida de uma Unidade e aguarda análise da CAF.' }
@@ -142,7 +142,7 @@ export class SolicitacoesService {
 
             // Notify via WebSocket that a change happened in Solicitacoes
             try {
-                sysfarmaChannel.send({
+                await sysfarmaChannel.send({
                     type: 'broadcast',
                     event: 'solicitacao_atualizada',
                     payload: {
@@ -262,7 +262,7 @@ export class SolicitacoesService {
             });
 
             try {
-                sysfarmaChannel.send({
+                await sysfarmaChannel.send({
                     type: 'broadcast',
                     event: 'remessa_despachada',
                     payload: {
@@ -346,7 +346,7 @@ export class SolicitacoesService {
             });
 
             try {
-                sysfarmaChannel.send({
+                await sysfarmaChannel.send({
                     type: 'broadcast',
                     event: 'remessa_recebida',
                     payload: {
@@ -405,7 +405,7 @@ export class SolicitacoesService {
             });
 
             try {
-                sysfarmaChannel.send({
+                await sysfarmaChannel.send({
                     type: 'broadcast',
                     event: 'solicitacao_recusada',
                     payload: {
