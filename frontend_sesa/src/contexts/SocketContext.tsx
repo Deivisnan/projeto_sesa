@@ -65,7 +65,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
                     }
                 }
             } else if (payload.table === 'remessas') {
-                if (payload.eventType === 'UPDATE' && payload.new.status === 'RECEBIDA' && payload.old.status !== 'RECEBIDA') {
+                if (payload.eventType === 'INSERT') {
+                    const cb = handlers['remessa_despachada'] || [];
+                    cb.forEach(f => f({ id_solicitacao: payload.new.id_solicitacao, mensagem: 'Carga a caminho!' }));
+                } else if (payload.eventType === 'UPDATE' && payload.new.status === 'RECEBIDA' && payload.old.status !== 'RECEBIDA') {
                     const cb = handlers['remessa_recebida'] || [];
                     cb.forEach(f => f({ mensagem: 'Recebimento confirmado pelo Almoxarifado!' }));
                 }
