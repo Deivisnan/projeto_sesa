@@ -46,7 +46,7 @@ export default function CAFSolicitacoesPage() {
     const loadSolicitacoes = async () => {
         try {
             setLoading(true);
-            const res = await api.get('/solicitacoes');
+            const res = await api.get('/solicitacoes?_t=' + Date.now());
             // Inicializar state com quantidade total igual à solicitada
             const initialQtds: Record<string, Record<string, number>> = {};
             res.data.forEach((sol: any) => {

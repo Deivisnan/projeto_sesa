@@ -5,8 +5,10 @@ import { Truck, Package, MapPin, Search, Loader2, CheckCircle2 } from 'lucide-re
 import api from '@/services/api';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useSocket } from '@/contexts/SocketContext';
 
 export default function CAFRemessasPage() {
+    const { socket } = useSocket();
     const [solicitacoes, setSolicitacoes] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [termo, setTermo] = useState('');
@@ -18,10 +20,35 @@ export default function CAFRemessasPage() {
         loadSolicitacoes();
     }, []);
 
+    useEffect(() => {
+        if (!socket) return;
+
+        // When a Manager in Solicitacoes aproves a request, it lands here for Dispatch
+        const handleSolicitacaoAtualizada = (data: any) => {
+            if (data.status === 'EM_SEPARACAO') {
+                toast.info(`Nova remessa pronta para despacho!`);
+                loadSolicitacoes();
+            }
+        };
+
+        // When another analyst dispatches this, update our screen too
+        const handleRemessaDespachada = (data: any) => {
+            loadSolicitacoes();
+        };
+
+        socket.on('solicitacao_atualizada', handleSolicitacaoAtualizada);
+        socket.on('remessa_despachada', handleRemessaDespachada);
+
+        return () => {
+            socket.off('solicitacao_atualizada', handleSolicitacaoAtualizada);
+            socket.off('remessa_despachada', handleRemessaDespachada);
+        };
+    }, [socket]);
+
     const loadSolicitacoes = async () => {
         try {
             setLoading(true);
-            const res = await api.get('/solicitacoes');
+            const res = await api.get('/solicitacoes?_t=' + Date.now());
             setSolicitacoes(res.data);
         } catch (error) {
             console.error(error);

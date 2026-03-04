@@ -47,8 +47,7 @@ export default function UnidadeRecebimentosPage() {
     const loadSolicitacoes = async () => {
         try {
             setLoading(true);
-            const res = await api.get('/solicitacoes');
-            // Como a rota /solicitacoes ja filtra se for Unidade (Controller verifica tipo_unidade)
+            const res = await api.get('/unidades/' + user?.unidade?.id + '/remessas?_t=' + Date.now());
             setSolicitacoes(res.data);
         } catch (error) {
             console.error("Erro ao carregar remessas da unidade", error);

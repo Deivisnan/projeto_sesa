@@ -26,8 +26,8 @@ export default function UnidadeDashboardPage() {
     useEffect(() => {
         if (!socket) return;
 
-        const handleSolicitacaoAtualizada = (data: any) => {
-            console.log("WebSocket Recebido:", data);
+        const handleUpdate = (data: any) => {
+            console.log("WebSocket Recebido (Unidade Dashboard):", data);
             toast.info(`Atualização em Tempo Real: ${data.mensagem}`);
             // Recarrega os dados imediatamente, sem dar reload na página
             if (user?.unidade?.id) {
@@ -35,19 +35,24 @@ export default function UnidadeDashboardPage() {
             }
         };
 
-        socket.on('solicitacao_atualizada', handleSolicitacaoAtualizada);
+        socket.on('solicitacao_atualizada', handleUpdate);
+        socket.on('remessa_despachada', handleUpdate);
+        socket.on('solicitacao_recusada', handleUpdate);
 
         return () => {
-            socket.off('solicitacao_atualizada', handleSolicitacaoAtualizada);
+            socket.off('solicitacao_atualizada', handleUpdate);
+            socket.off('remessa_despachada', handleUpdate);
+            socket.off('solicitacao_recusada', handleUpdate);
         };
     }, [socket, user]);
 
     const loadDashboardData = async () => {
         try {
             setLoading(true);
+            const ts = Date.now();
             const [stoqueRes, solicitacoesRes] = await Promise.all([
-                api.get(`/estoque/${user?.unidade?.id}`),
-                api.get('/solicitacoes')
+                api.get(`/estoque/${user?.unidade?.id}?_t=${ts}`),
+                api.get(`/solicitacoes?_t=${ts}`)
             ]);
 
             const estoque = stoqueRes.data;
