@@ -27,7 +27,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        if (!supabaseUrl || !supabaseKey) {
+        // Only run Supabase logic in the browser, not during Next.js server build
+        if (typeof window === 'undefined') return;
+
+        if (!supabaseUrl || !supabaseKey || supabaseUrl === 'https://placeholder.supabase.co') {
             console.error('Supabase URL ou Key não encontrados no frontend!');
             return;
         }
@@ -35,6 +38,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         const channel = supabase.channel('sysfarma');
 
         // Dictionary to hold all socket.on callbacks
+        // We put it inside a ref or keep it scoped safely
         const handlers: Record<string, Function[]> = {};
 
         // Listen to all broadcast events on the sysfarma channel from Backend
@@ -69,6 +73,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         setSocket(mockSocket);
 
         return () => {
+            // Clean up: unsubscribe from the channel so Next.js build workers don't hang!
             supabase.removeChannel(channel);
         };
     }, []);
