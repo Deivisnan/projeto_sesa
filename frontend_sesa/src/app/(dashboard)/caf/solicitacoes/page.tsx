@@ -4,8 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { Activity, Beaker, FileText, CheckCircle2, Clock, MapPin, Search, Loader2, Download } from 'lucide-react';
 import api from '@/services/api';
 import { toast } from 'sonner';
+import { useSocket } from '@/contexts/SocketContext';
 
 export default function CAFSolicitacoesPage() {
+    const { socket } = useSocket();
     const [solicitacoes, setSolicitacoes] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [termo, setTermo] = useState('');
@@ -18,6 +20,28 @@ export default function CAFSolicitacoesPage() {
     useEffect(() => {
         loadSolicitacoes();
     }, []);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleNovaSolicitacao = (data: any) => {
+            toast.info(`Novo Pedido na Triagem: ${data.mensagem}`);
+            loadSolicitacoes();
+        };
+
+        const handleRemessaRecebida = (data: any) => {
+            toast.success(`Confirmação de Entrega: ${data.mensagem}`);
+            loadSolicitacoes();
+        };
+
+        socket.on('nova_solicitacao', handleNovaSolicitacao);
+        socket.on('remessa_recebida', handleRemessaRecebida);
+
+        return () => {
+            socket.off('nova_solicitacao', handleNovaSolicitacao);
+            socket.off('remessa_recebida', handleRemessaRecebida);
+        };
+    }, [socket]);
 
     const loadSolicitacoes = async () => {
         try {

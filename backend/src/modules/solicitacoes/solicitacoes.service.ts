@@ -42,6 +42,15 @@ export class SolicitacoesService {
             return nova;
         });
 
+        try {
+            const io = require('../../core/socket').getIo();
+            io.emit('nova_solicitacao', {
+                mensagem: 'Nova solicitação recebida de uma Unidade e aguarda análise da CAF.'
+            });
+        } catch (e) {
+            console.error("Erro ao emitir evento WS:", e);
+        }
+
         return solicitacao;
     }
 
@@ -127,6 +136,18 @@ export class SolicitacoesService {
                     where: { id: item.id_item_solicitacao },
                     data: { quantidade_aprovada: item.quantidade_aprovada }
                 });
+            }
+
+            // Notify via WebSocket that a change happened in Solicitacoes
+            try {
+                const io = require('../../core/socket').getIo();
+                io.emit('solicitacao_atualizada', {
+                    id_solicitacao: data.id_solicitacao,
+                    status: 'EM_SEPARACAO',
+                    mensagem: 'Um pedido acaba de ser enviado para Separação pela CAF.'
+                });
+            } catch (e) {
+                console.error("Erro ao emitir evento WS:", e);
             }
 
             return { message: 'Aprovação registrada com sucesso! Pedido enviado para Separação.' };
@@ -235,6 +256,16 @@ export class SolicitacoesService {
                 data: { status: 'DESPACHADA' }
             });
 
+            try {
+                const io = require('../../core/socket').getIo();
+                io.emit('remessa_despachada', {
+                    id_solicitacao: id_solicitacao,
+                    mensagem: 'Uma remessa foi despachada pela CAF e está a caminho da sua Unidade.'
+                });
+            } catch (e) {
+                console.error("Erro ao emitir evento WS:", e);
+            }
+
             return { message: 'Caixas despachadas e remessa registrada. Estoque central deduzido definitivamente.', id_remessa: remessa.id };
         });
     }
@@ -306,6 +337,16 @@ export class SolicitacoesService {
                 data: { status: 'ATENDIDA_INTEGRAL' }
             });
 
+            try {
+                const io = require('../../core/socket').getIo();
+                io.emit('remessa_recebida', {
+                    id_solicitacao: id_solicitacao,
+                    mensagem: 'A Unidade confirmou o recebimento da remessa e o estoque local foi abastecido.'
+                });
+            } catch (e) {
+                console.error("Erro ao emitir evento WS:", e);
+            }
+
             return { message: 'Entrega confirmada e estoque da unidade abastecido com sucesso!' };
         });
     }
@@ -351,6 +392,16 @@ export class SolicitacoesService {
                 where: { id: id_solicitacao },
                 data: { status: 'RECUSADA' }
             });
+
+            try {
+                const io = require('../../core/socket').getIo();
+                io.emit('solicitacao_recusada', {
+                    id_solicitacao: id_solicitacao,
+                    mensagem: `Um pedido da sua unidada foi cancelado/recusado pela CAF.`
+                });
+            } catch (e) {
+                console.error("Erro ao emitir evento WS:", e);
+            }
 
             return { message: motivo };
         });

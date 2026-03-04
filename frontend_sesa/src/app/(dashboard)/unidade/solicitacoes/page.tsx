@@ -5,9 +5,11 @@ import { PackagePlus, Send, AlertCircle, Loader2 } from 'lucide-react';
 import api from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { useSocket } from '@/contexts/SocketContext';
 
 export default function SolicitacaoMedicamentosPage() {
     const { user } = useAuth();
+    const { socket } = useSocket();
     const [medicamentosAutorizados, setMedicamentosAutorizados] = useState<any[]>([]);
     const [carrinho, setCarrinho] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
@@ -18,6 +20,23 @@ export default function SolicitacaoMedicamentosPage() {
             loadCatalogo(user.unidade.id);
         }
     }, [user]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleAlert = (data: any) => toast.info(`Atualização Logística: ${data.mensagem}`);
+        const handleErrorAlert = (data: any) => toast.error(`Aviso da CAF: ${data.mensagem}`);
+
+        socket.on('solicitacao_atualizada', handleAlert);
+        socket.on('remessa_despachada', handleAlert);
+        socket.on('solicitacao_recusada', handleErrorAlert);
+
+        return () => {
+            socket.off('solicitacao_atualizada', handleAlert);
+            socket.off('remessa_despachada', handleAlert);
+            socket.off('solicitacao_recusada', handleErrorAlert);
+        };
+    }, [socket]);
 
     const loadCatalogo = async (id_unidade: string) => {
         try {

@@ -6,9 +6,11 @@ import api from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useSocket } from '@/contexts/SocketContext';
 
 export default function UnidadeRecebimentosPage() {
     const { user } = useAuth();
+    const { socket } = useSocket();
     const [solicitacoes, setSolicitacoes] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [processando, setProcessando] = useState<string | null>(null);
@@ -19,6 +21,28 @@ export default function UnidadeRecebimentosPage() {
             loadSolicitacoes();
         }
     }, [user]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleRemessaDespachada = (data: any) => {
+            toast.info(`Carga a Caminho: ${data.mensagem}`);
+            if (user?.unidade?.id) loadSolicitacoes();
+        };
+
+        const handleSolicitacaoRecusada = (data: any) => {
+            toast.error(`Aviso: ${data.mensagem}`);
+            if (user?.unidade?.id) loadSolicitacoes();
+        };
+
+        socket.on('remessa_despachada', handleRemessaDespachada);
+        socket.on('solicitacao_recusada', handleSolicitacaoRecusada);
+
+        return () => {
+            socket.off('remessa_despachada', handleRemessaDespachada);
+            socket.off('solicitacao_recusada', handleSolicitacaoRecusada);
+        };
+    }, [socket, user]);
 
     const loadSolicitacoes = async () => {
         try {

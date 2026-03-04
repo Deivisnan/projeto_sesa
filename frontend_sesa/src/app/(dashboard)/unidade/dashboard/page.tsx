@@ -4,9 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { Activity, Package, Stethoscope, AlertCircle, Loader2 } from 'lucide-react';
 import api from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
+import { useSocket } from '@/contexts/SocketContext';
+import { toast } from 'sonner';
 
 export default function UnidadeDashboardPage() {
     const { user } = useAuth();
+    const { socket } = useSocket();
     const [metrics, setMetrics] = useState({
         totalEstoque: 0,
         pedidosAnalise: 0,
@@ -19,6 +22,25 @@ export default function UnidadeDashboardPage() {
             loadDashboardData();
         }
     }, [user]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleSolicitacaoAtualizada = (data: any) => {
+            console.log("WebSocket Recebido:", data);
+            toast.info(`Atualização em Tempo Real: ${data.mensagem}`);
+            // Recarrega os dados imediatamente, sem dar reload na página
+            if (user?.unidade?.id) {
+                loadDashboardData();
+            }
+        };
+
+        socket.on('solicitacao_atualizada', handleSolicitacaoAtualizada);
+
+        return () => {
+            socket.off('solicitacao_atualizada', handleSolicitacaoAtualizada);
+        };
+    }, [socket, user]);
 
     const loadDashboardData = async () => {
         try {
