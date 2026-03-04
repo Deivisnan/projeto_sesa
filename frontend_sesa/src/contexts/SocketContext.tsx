@@ -1,14 +1,20 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { API_URL } from '@/services/apiConfig';
+import { createClient } from '@supabase/supabase-js';
 
-// O backend deve estar rodando na mesma porta base, removemos apenas o "/api"
-const SOCKET_URL = API_URL.replace('/api', '');
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// We keep the MockSocket interface matching what components expect to prevent huge refactors
+export interface MockSocket {
+    on: (event: string, callback: (payload: any) => void) => void;
+    off: (event: string, callback: (payload: any) => void) => void;
+}
 
 interface SocketContextData {
-    socket: Socket | null;
+    socket: MockSocket | null;
     isConnected: boolean;
 }
 
@@ -17,29 +23,53 @@ const SocketContext = createContext<SocketContextData>({ socket: null, isConnect
 export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
-    const [socket, setSocket] = useState<Socket | null>(null);
+    const [socket, setSocket] = useState<MockSocket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        const socketInstance = io(SOCKET_URL, {
-            withCredentials: true,
-            transports: ['websocket', 'polling']
+        if (!supabaseUrl || !supabaseKey) {
+            console.error('Supabase URL ou Key não encontrados no frontend!');
+            return;
+        }
+
+        const channel = supabase.channel('sysfarma');
+
+        // Dictionary to hold all socket.on callbacks
+        const handlers: Record<string, Function[]> = {};
+
+        // Listen to all broadcast events on the sysfarma channel from Backend
+        channel.on('broadcast', { event: '*' }, (payload) => {
+            console.log('Supabase Realtime Recebido:', payload.event, payload.payload);
+            const callbacks = handlers[payload.event] || [];
+            callbacks.forEach(cb => cb(payload.payload));
         });
 
-        socketInstance.on('connect', () => {
-            console.log('Socket conectado:', socketInstance.id);
-            setIsConnected(true);
+        channel.subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+                console.log('Supabase Realtime Conectado: sysfarma channel');
+                setIsConnected(true);
+            } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+                console.log('Supabase Realtime Desconectado', status);
+                setIsConnected(false);
+            }
         });
 
-        socketInstance.on('disconnect', () => {
-            console.log('Socket desconectado');
-            setIsConnected(false);
-        });
+        // The adapter allowing React components to use `socket.on` perfectly linked to Supabase
+        const mockSocket: MockSocket = {
+            on: (event: string, callback: (payload: any) => void) => {
+                if (!handlers[event]) handlers[event] = [];
+                handlers[event].push(callback);
+            },
+            off: (event: string, callback: (payload: any) => void) => {
+                if (!handlers[event]) return;
+                handlers[event] = handlers[event].filter(cb => cb !== callback);
+            }
+        };
 
-        setSocket(socketInstance);
+        setSocket(mockSocket);
 
         return () => {
-            socketInstance.disconnect();
+            supabase.removeChannel(channel);
         };
     }, []);
 
